@@ -4,6 +4,8 @@ import os
 from datetime import datetime
 from typing import List, Text
 
+import matplotlib
+
 from absl import app
 from absl import flags
 from absl import logging
@@ -25,6 +27,9 @@ flags.DEFINE_string(
 flags.DEFINE_string(
     "stats_outfile", None, "The path to a file to append runtime stats to."
 )
+
+flags.DEFINE_bool("show_plot", False,
+                  "Whether to show the plot and hull after construction.")
 
 
 def print_usage():
@@ -65,9 +70,13 @@ def main(argv):
 
     runtime = (datetime.now() - start_time).total_seconds()
 
-    if not convex_hull.validate_hull(hull):
-        print("Error: constructed hull is invalid.")
+    if not convex_hull.is_convex(hull):
+        print("Error: constructed hull is not convex.")
         return 1
+    print("Convex hull is convex.")
+
+    if FLAGS.show_plot:
+        util.show_plot(points, hull)
 
     if FLAGS.hull_outfile:
         with open(FLAGS.hull_outfile, "w") as f:
@@ -83,4 +92,6 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    FLAGS.logtostderr = True
+    matplotlib.use("TkAgg")
     app.run(main)
