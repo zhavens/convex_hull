@@ -1,3 +1,5 @@
+"""A set of various util functions for the project."""
+
 import os
 from typing import List, Text
 
