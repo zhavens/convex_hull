@@ -1,5 +1,5 @@
+"""A library for creating and validating convex hulls."""
 
-from re import I
 from typing import List
 import sys
 
@@ -22,8 +22,8 @@ def divide_and_conquer(points: List[Point]) -> List[Point]:
     raise NotImplementedError()
 
 
-def grahams_algorithm(points: List[Point]) -> List[Point]:
-    """Implementation of Graham's algorithm."""
+def grahams_scan(points: List[Point]) -> List[Point]:
+    """Implementation of Graham's scan."""
     raise NotImplementedError()
 
 
@@ -38,6 +38,8 @@ def is_convex(points: List[Point]) -> bool:
     Uses the cross product to determine the angle between adjacent edges. If
     all angles have a consistent winding (left- or right-handed), then the poly
     is convex. A degenerate poly is not considered convex.
+
+    https://en.wikipedia.org/wiki/Cross_product#Computational_geometry
 
     Args:
         points: The list of vertices that form the polygon.
@@ -54,7 +56,6 @@ def is_convex(points: List[Point]) -> bool:
         c = points[(i+2) % len(points)]
         cp = np.cross(b-a, c-b)
 
-        logging.vlog(1, f"{b}x{c} = {cp}")
         if cp == 0:
             continue
         elif not winding:
@@ -68,7 +69,12 @@ def point_in_poly(p1: Point, poly: List[Point]) -> bool:
     """Determines whether the point is in the given polygon.
 
     Uses a ray-casting method, determining the number of interstions the ray
-    has with edges of the poly to indicate whether the point falls within it.
+    has with edges of the poly to indicate whether the point falls within it. 
+    Intersection testing uses a stripped version of the Bezier-based
+    segment-segment equation, as the ray is drawn horizonally, so all
+    (p1.y - p2.y) terms will be zero and can be removed.
+
+    https://en.wikipedia.org/wiki/Line_line_intersection#Given_two_points_on_each_line_segment  
 
     Args:
         p1: The point to query.
@@ -85,8 +91,8 @@ def point_in_poly(p1: Point, poly: List[Point]) -> bool:
         q1 = poly[i]
         q2 = poly[(i+1) % len(poly)]
 
-        den = (p1.x - p2.x)*(q1.y - q2.y)
-        if den == 0:
+        denominator = (p1.x - p2.x)*(q1.y - q2.y)
+        if denominator == 0:
             if p1.y == q1.y and q1.x <= p1.x <= q2.x:
                 # Point lies _on_ a line of the poly.
                 return True
@@ -94,8 +100,8 @@ def point_in_poly(p1: Point, poly: List[Point]) -> bool:
                 continue
 
         t = float((p1.x - q1.x)*(q1.y - q2.y) -
-                  (p1.y - q1.y)*(q1.x - q2.x)) / den
-        u = float(-(p1.y - q1.y)*(p1.x - p2.x)) / den
+                  (p1.y - q1.y)*(q1.x - q2.x)) / denominator
+        u = float(-(p1.y - q1.y)*(p1.x - p2.x)) / denominator
 
         if (0 <= t <= 1) and (0 <= u <= 1):
             logging.info(f'Intersecton: {p1} -> {q1}-{q2}')

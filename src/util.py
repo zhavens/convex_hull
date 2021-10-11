@@ -11,7 +11,8 @@ from point import Point
 def fetch_input_points(path: Text) -> List[Point]:
     """Fetches input points from the given file.
 
-    Points should be represented as "x,y" pairs, one per line. Any parentheses will be stripped.
+    Points should be represented as "x,y" pairs, one per line. Any parentheses
+    will be stripped.
 
     Args:
       path: The path to the input file

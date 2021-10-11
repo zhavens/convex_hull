@@ -1,4 +1,23 @@
-"""Main script for convex hull construction."""
+"""Main script for convex hull construction.
+
+Sample Invocations ----------------------
+
+Generates a hull using Chan's Algorithm, saves the hull to a file, and appends
+runtime statistics to a CSV file:
+$ convex_hull_main.py \
+    --algo=chan \
+    --infile=inputs/testpoints
+    --hull_outfile=outputs/hull
+    --stats_outfile=results/results.csv
+
+Generates a hull using Graham's Scan and displays a plot of the results and
+logs verbosely.
+$ convex_hull_main.py \
+    --algo=graham \
+    --infile=inputs/testpoints
+    --show_plot
+    --verbose=1
+"""
 
 import os
 from datetime import datetime
@@ -59,7 +78,7 @@ def main(argv):
     elif FLAGS.algo == "dc":
         hull = convex_hull.divide_and_conquer(points)
     elif FLAGS.algo == "grahams":
-        hull = convex_hull.grahams_algorithm(points)
+        hull = convex_hull.grahams_scan(points)
     elif FLAGS.algo == "chans":
         hull = convex_hull.chans_algorithm(points)
     elif FLAGS.algo == "test":

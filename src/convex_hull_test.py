@@ -55,7 +55,7 @@ class UtilityUnitTest(absltest.TestCase):
 
     def testIsConvexTrue(self):
         self.assertTrue(convex_hull.is_convex(
-            make_point_set([(0, 0, (2, 0), (2, 2), (0, 2))])))
+            make_point_set([(0, 0), (2, 0), (2, 2), (0, 2)])))
 
     def testIsConvexFalse(self):
         self.assertFalse(convex_hull.is_convex(
@@ -67,6 +67,8 @@ class UtilityUnitTest(absltest.TestCase):
     convex_hull.divide_and_conquer,
     convex_hull.grahams_algorithm,
     convex_hull.chans_algorithm
+
+
 )
 class HullAlgorithmTest(parameterized.TestCase):
     def testSimpleHull(self, algo):

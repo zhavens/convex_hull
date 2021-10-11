@@ -1,4 +1,4 @@
-"""Main script for convex hull construction."""
+"""Main script for convex hull validation."""
 
 from absl import app
 from absl import flags
@@ -9,8 +9,8 @@ import convex_hull
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string(
-    'infile', None, 'The path to an input file containing x,y pairs of coordinates.')
+flags.DEFINE_string("infile", None, "The path to an input file containing x,y "
+                    "pairs of coordinates.")
 
 
 def print_usage():
