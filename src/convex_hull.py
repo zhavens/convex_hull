@@ -33,10 +33,19 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
 
 
 def is_convex(points: List[Point]) -> bool:
+    """Determines whether the set of verices forms a convex poly.
+
+    Uses the cross product to determine the angle between adjacent edges. If
+    all angles have a consistent winding (left- or right-handed), then the poly
+    is convex. A degenerate poly is not considered convex.
+
+    Args:
+        points: The list of vertices that form the polygon.
+    Returns:
+        Whether the poly is convex.
+    """
     if not points or len(points) < 3:
         return False
-
-    logging.vlog(1, "Testing convexity...")
 
     winding = None
     for i in range(0, len(points)):
@@ -56,7 +65,17 @@ def is_convex(points: List[Point]) -> bool:
 
 
 def point_in_poly(p1: Point, poly: List[Point]) -> bool:
-    """Determines whether the point is in the given polygon."""
+    """Determines whether the point is in the given polygon.
+
+    Uses a ray-casting method, determining the number of interstions the ray
+    has with edges of the poly to indicate whether the point falls within it.
+
+    Args:
+        p1: The point to query.
+        poly: An ordered list of vertices that make up the poly.
+    Returns:
+        Whether the point is within the poly.
+    """
     if len(poly) < 3:
         return False
 
@@ -85,7 +104,17 @@ def point_in_poly(p1: Point, poly: List[Point]) -> bool:
 
 
 def validate_hull(points: List[Point], hull: List[Point]) -> bool:
-    """Validates the convex hull provded as a series of points."""
+    """Validates the convex hull provded as a series of points.
+
+    Checks both that the hull is convex and that all points are either a part of
+    the hull or within its confines.
+
+    Args:
+        points: The full point set the hull was created for
+        hull: The list of ordered points that make up the convex hull.
+    Returns:
+        Whether the hull is valid for the given points.
+    """
     if not points:
         return False
     if len(points) < 3:
