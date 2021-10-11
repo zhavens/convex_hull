@@ -55,11 +55,11 @@ class UtilityUnitTest(absltest.TestCase):
 
     def testIsConvexTrue(self):
         self.assertTrue(convex_hull.is_convex(
-            make_point_set([(0, 0, (2, 0), (2, 2), (0, 2))])))
+            make_point_set([(0, 0), (2, 0), (2, 2), (0, 2)])))
 
     def testIsConvexFalse(self):
         self.assertFalse(convex_hull.is_convex(
-            make_point_set([(0, 0, (2, 0), (2, 2), (1, 1), (0, 2))])))
+            make_point_set([(0, 0), (2, 0), (2, 2), (1, 1), (0, 2)])))
 
 
 @ parameterized.parameters(
