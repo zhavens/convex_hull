@@ -33,7 +33,7 @@ import util
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_enum("distribution", "random", ["random"],
+flags.DEFINE_enum("distribution", "uniform", ["uniform", "normal"],
                   "The distribution type for the generated points.")
 
 flags.DEFINE_integer(
@@ -45,6 +45,10 @@ flags.DEFINE_float(
 flags.DEFINE_string(
     "outfile", None, "The output file path for writing the points to.")
 
+flags.DEFINE_float("normal_stddev", None,
+                   "The standarad deviation to use for a normal distribution. "
+                   "Defaults to 1/10 of --max_coord.")
+
 flags.DEFINE_bool("show_plot", False,
                   "Whether to show the points after generation.")
 
@@ -55,11 +59,19 @@ def print_usage():
 Usage: gen_input_set.py --distribution=[dist] --num_points=[num_points] --outfile=[infile]""")
 
 
-def random_points(num_points: float, max_value: float):
+def uniform_points(num_points: int, max_value: float):
     points = []
     for i in range(num_points):
         points.append(Point(random.uniform(0, max_value),
-                      random.uniform(0, max_value)))
+                            random.uniform(0, max_value)))
+    return points
+
+
+def normal_points(num_points: int, mean: float, stddev: float):
+    points = []
+    for i in range(num_points):
+        points.append(Point(random.gauss(mean, stddev),
+                            random.gauss(mean, stddev)))
     return points
 
 
@@ -67,8 +79,11 @@ def main(argv):
     del argv  # unused
 
     points = None
-    if FLAGS.distribution == "random":
-        points = random_points(FLAGS.num_points, FLAGS.max_coord)
+    if FLAGS.distribution == "uniform":
+        points = uniform_points(FLAGS.num_points, FLAGS.max_coord)
+    elif FLAGS.distribution == "normal":
+        stddev = FLAGS.normal_stddev if FLAGS.normal_stddev else FLAGS.max_coord/10
+        points = normal_points(FLAGS.num_points, FLAGS.max_coord/2, stddev)
     else:
         raise NotImplementedError(
             f"--distribution=\"{FLAGS.distribution}\" not supported.")

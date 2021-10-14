@@ -12,10 +12,11 @@
             "console": "integratedTerminal",
             "args": [
                 "-algo=grahams",
-                "--infile=${workspaceFolder}/inputs/random100_2",
-                "--hull_outfile=${workspaceFolder}/outputs/random100_2",
+                "--infile=${workspaceFolder}/inputs/normal50000_1",
+                // "--hull_outfile=${workspaceFolder}/outputs/normal50000_1",
+                // "--stats_outfile=${workspaceFolder}/results/results.csv",
                 "--show_plot",
-                "-v=1"
+                // "-v=1"
             ]
         },
         {
@@ -25,9 +26,10 @@
             "program": "${workspaceFolder}/tools/gen_input_set.py",
             "console": "integratedTerminal",
             "args": [
-                "--distribution=random",
-                "--num_points=100",
-                "--outfile=${workspaceFolder}/inputs/random100_2",
+                "--distribution=normal",
+                "--num_points=50000",
+                "--max_coord=1.0",
+                "--outfile=${workspaceFolder}/inputs/normal50000_1",
                 "--show_plot",
                 "-v=1"
             ]

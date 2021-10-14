@@ -84,6 +84,8 @@ def main(argv):
         logging.error("Error: constructed hull is not convex.")
         return 1
 
+    logging.info(f"Constructed the hull in {runtime}s.")
+
     if FLAGS.hull_outfile:
         util.write_points(hull, FLAGS.hull_outfile)
     else:
