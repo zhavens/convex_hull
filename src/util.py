@@ -27,19 +27,33 @@ def fetch_input_points(path: Text) -> List[Point]:
         for l in f:
             sanitized = l.strip("(").strip(")\n")
             components = sanitized.split(",")
-            points.append(Point(int(components[0]), int(components[1])))
+            points.append(Point(float(components[0]), float(components[1])))
     return points
 
 
+def write_points(points: List[Point], path: Text):
+    """Write the points to the given file."""
+    with open(path, "w") as f:
+        for p in points:
+            f.write(f"{p}\n")
+
+
 def show_plot(points: List[Point], hull: List[Point] = None):
+    """Shows a matplot lib plot for the given points and hull."""
     fig, ax = plt.subplots()
-    ax.scatter([p.x for p in points], [p.y for p in points])
+    if points:
+        ax.scatter([p.x for p in points], [p.y for p in points])
 
     if hull:
+        ax.scatter([p.x for p in hull], [p.y for p in hull])
         ax.plot([p.x for p in hull + [hull[0]]],
                 [p.y for p in hull + [hull[0]]])
+        for idx, p in enumerate(hull):
+            plt.annotate(idx, (p.x, p.y), ha='center')
 
     ax.grid(True)
+    ax.margins(0.5, 0.5)
     fig.tight_layout()
 
+    plt.axis("scaled")
     plt.show()

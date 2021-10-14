@@ -34,7 +34,7 @@ import convex_hull
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_enum("algo", "gw", ["gw", "dc", "graham", "chan", "test"],
+flags.DEFINE_enum("algo", "gw", ["gw", "dc", "grahams", "chans", "test"],
                   "The algorithm to generate the convex hull with.")
 
 flags.DEFINE_string(
@@ -60,18 +60,10 @@ Usage: convex_hull_main.py --infile=[infile] --outfile=[outfile] (--algo={gw, dc
 def main(argv):
     del argv  # unused
 
-    if not FLAGS.infile:
-        print("Error: --infile not specified.")
-        print_usage()
-        return 1
-
     points = util.fetch_input_points(FLAGS.infile)
-
-    if logging.vlog_is_on(1):
-        print(f"Input Points: {points}")
+    logging.vlog(1, f"Input Points: {points}")
 
     start_time = datetime.now()
-
     hull = None
     if FLAGS.algo == "gw":
         hull = convex_hull.gift_wrapping(points)
@@ -86,31 +78,29 @@ def main(argv):
     else:
         raise NotImplementedError(
             f"--algo=\"{FLAGS.algo}\" not supported.")
-
     runtime = (datetime.now() - start_time).total_seconds()
 
     if not convex_hull.is_convex(hull):
-        print("Error: constructed hull is not convex.")
+        logging.error("Error: constructed hull is not convex.")
         return 1
-    print("Convex hull is convex.")
-
-    if FLAGS.show_plot:
-        util.show_plot(points, hull)
 
     if FLAGS.hull_outfile:
-        with open(FLAGS.hull_outfile, "w") as f:
-            for p in hull:
-                f.write(f"{p}\n")
+        util.write_points(hull, FLAGS.hull_outfile)
     else:
-        print(f"Hull Points: {hull}")
+        logging.info(f"Hull Points: {hull}")
 
     if FLAGS.stats_outfile:
         with open(FLAGS.stats_outfile, "a") as f:
             f.write(f"{FLAGS.algo},{os.path.basename(FLAGS.infile)},{runtime}\n")
+
+    if FLAGS.show_plot:
+        util.show_plot(points, hull)
     return 0
 
 
 if __name__ == "__main__":
     FLAGS.logtostderr = True
+    flags.mark_flag_as_required('infile')
+
     matplotlib.use("TkAgg")
     app.run(main)

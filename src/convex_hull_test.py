@@ -65,10 +65,8 @@ class UtilityUnitTest(absltest.TestCase):
 @ parameterized.parameters(
     convex_hull.gift_wrapping,
     convex_hull.divide_and_conquer,
-    convex_hull.grahams_algorithm,
+    convex_hull.grahams_scan,
     convex_hull.chans_algorithm
-
-
 )
 class HullAlgorithmTest(parameterized.TestCase):
     def testSimpleHull(self, algo):

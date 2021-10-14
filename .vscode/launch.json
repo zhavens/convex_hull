@@ -11,9 +11,36 @@
             "program": "${workspaceFolder}/src/convex_hull_main.py",
             "console": "integratedTerminal",
             "args": [
-                "-algo=test",
-                "--infile=${workspaceFolder}/inputs/testpoints",
-                "--hull_outfile=${workspaceFolder}/outputs/hull",
+                "-algo=grahams",
+                "--infile=${workspaceFolder}/inputs/random100_2",
+                "--hull_outfile=${workspaceFolder}/outputs/random100_2",
+                "--show_plot",
+                "-v=1"
+            ]
+        },
+        {
+            "name": "Gen Input Set",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/gen_input_set.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--distribution=random",
+                "--num_points=100",
+                "--outfile=${workspaceFolder}/inputs/random100_2",
+                "--show_plot",
+                "-v=1"
+            ]
+        },
+        {
+            "name": "Plot Hull",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/plot_points.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--points_file=${workspaceFolder}/inputs/random100_2",
+                "--hull_file=${workspaceFolder}/outputs/random100_2",
                 "-v=1"
             ]
         }

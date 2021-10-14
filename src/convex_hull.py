@@ -1,5 +1,6 @@
 """A library for creating and validating convex hulls."""
 
+from operator import attrgetter
 from typing import List
 import sys
 
@@ -24,7 +25,28 @@ def divide_and_conquer(points: List[Point]) -> List[Point]:
 
 def grahams_scan(points: List[Point]) -> List[Point]:
     """Implementation of Graham's scan."""
-    raise NotImplementedError()
+
+    hull = []
+
+    def _IsCCW(c, a, b):
+        return np.cross(a-c, b-c) >= 0
+
+    p0 = min(points, key=lambda p: (p.y, p.x))
+    points = sorted(points, key=lambda p: np.dot(
+        p-p0, [1, 0])/np.linalg.norm(p-p0) if p != p0 else 1, reverse=True)
+    # dots = [np.dot(p-p0, [1, 0])/np.linalg.norm(p-p0)
+    #         for p in points if p != p0]
+
+    logging.vlog(1, f"p0: {p0}")
+    logging.vlog(1, f"Sorted points: {points}")
+
+    for p in points:
+        while len(hull) > 1 and not _IsCCW(hull[-2], hull[-1], p):
+            hull.pop()
+        hull.append(p)
+        logging.vlog(2, hull)
+
+    return hull
 
 
 def chans_algorithm(points: List[Point]) -> List[Point]:
@@ -69,12 +91,12 @@ def point_in_poly(p1: Point, poly: List[Point]) -> bool:
     """Determines whether the point is in the given polygon.
 
     Uses a ray-casting method, determining the number of interstions the ray
-    has with edges of the poly to indicate whether the point falls within it. 
+    has with edges of the poly to indicate whether the point falls within it.
     Intersection testing uses a stripped version of the Bezier-based
     segment-segment equation, as the ray is drawn horizonally, so all
     (p1.y - p2.y) terms will be zero and can be removed.
 
-    https://en.wikipedia.org/wiki/Line_line_intersection#Given_two_points_on_each_line_segment  
+    https://en.wikipedia.org/wiki/Line_line_intersection#Given_two_points_on_each_line_segment
 
     Args:
         p1: The point to query.
@@ -104,7 +126,7 @@ def point_in_poly(p1: Point, poly: List[Point]) -> bool:
         u = float(-(p1.y - q1.y)*(p1.x - p2.x)) / denominator
 
         if (0 <= t <= 1) and (0 <= u <= 1):
-            logging.info(f'Intersecton: {p1} -> {q1}-{q2}')
+            logging.vlog(2, f'Intersecton: {p1} -> {q1}-{q2}')
             num_intersections += 1
     return num_intersections % 2 == 1
 

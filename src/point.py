@@ -7,8 +7,8 @@ import numpy as np
 @dataclass
 class Point:
     """A simple point struct for holding coordinates."""
-    x: int
-    y: int
+    x: float
+    y: float
 
     def __str__(self) -> str:
         return f"({self.x}, {self.y})"
@@ -19,8 +19,8 @@ class Point:
     def __sub__(self, other):
         return Point(self.x - other.x, self.y - other.y)
 
-    def __getitem__(self, key) -> int:
+    def __getitem__(self, key) -> float:
         return [self.x, self.y][key]
 
     def __array__(self, dtype=None):
-        return np.array([self.x, self.y], dtype=int)
+        return np.array([self.x, self.y], dtype=float)
