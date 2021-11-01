@@ -9,8 +9,10 @@ import convex_hull
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string("infile", None, "The path to an input file containing x,y "
-                    "pairs of coordinates.")
+flags.DEFINE_string("hull_file", None, "The path to an input file containing x,y "
+                    "pairs of coordinates defining a convex hull.")
+flags.DEFINE_string("points_file", None, "The path to an input file containing x,y "
+                    "pairs of coordinates defining a set of points hull.")
 
 
 def print_usage():
@@ -22,17 +24,14 @@ Usage: validate_hull.py --infile=[infile]""")
 def main(argv):
     del argv  # unused
 
-    if not FLAGS.infile:
-        print("Error: --infile not specified.")
-        print_usage()
-        return 1
-
-    hull = util.fetch_input_points(FLAGS.infile)
+    hull = util.fetch_input_points(FLAGS.hull_file)
+    points = util.fetch_input_points(
+        FLAGS.points_file) if FLAGS.points_file else []
 
     if logging.vlog_is_on(1):
-        print(f"Input Points: {hull}")
+        print(f"Hull Points: {hull}")
 
-    if convex_hull.validate_hull(hull):
+    if convex_hull.validate_hull(hull, points):
         print("Hull is valid.")
         return 0
     else:
@@ -41,4 +40,6 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    flags.mark_flag_as_required('hull_file')
+
     app.run(main)

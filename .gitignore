@@ -131,3 +131,4 @@ dmypy.json
 
 # Testing/Runtime Outputs
 outputs/
+hulls/

@@ -13,8 +13,8 @@
             "args": [
                 "-algo=grahams",
                 "--infile=${workspaceFolder}/inputs/normal50000_1",
-                // "--hull_outfile=${workspaceFolder}/outputs/normal50000_1",
-                // "--stats_outfile=${workspaceFolder}/results/results.csv",
+                "--hull_outfile=${workspaceFolder}/outputs/normal50000_1",
+                "--stats_outfile=${workspaceFolder}/results/results.csv",
                 "--show_plot",
                 // "-v=1"
             ]
@@ -35,7 +35,7 @@
             ]
         },
         {
-            "name": "Plot Hull",
+            "name": "Plot Points",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/tools/plot_points.py",
@@ -44,6 +44,32 @@
                 "--points_file=${workspaceFolder}/inputs/random100_2",
                 "--hull_file=${workspaceFolder}/outputs/random100_2",
                 "-v=1"
+            ]
+        },
+        {
+            "name": "Validate Hull",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/validate_hull.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--hull_file=${workspaceFolder}/outputs/uniform100_1",
+                "--points_file=${workspaceFolder}/inputs/uniform100_1",
+                "--plot_errors",
+                "-v=2"
+            ]
+        },
+        {
+            "name": "Find Rightmost",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/rightmost_point.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--hullfile=${workspaceFolder}/hulls/2_0",
+                "--point=93.51183184068464,93.80922987140056",
+                "--plot_errors",
+                "-v=3",
             ]
         }
     ]

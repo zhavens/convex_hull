@@ -80,23 +80,28 @@ def main(argv):
             f"--algo=\"{FLAGS.algo}\" not supported.")
     runtime = (datetime.now() - start_time).total_seconds()
 
-    if not convex_hull.is_convex(hull):
-        logging.error("Error: constructed hull is not convex.")
-        return 1
-
-    logging.info(f"Constructed the hull in {runtime}s.")
+    if FLAGS.show_plot:
+        util.show_plot(points, hulls=[hull])
 
     if FLAGS.hull_outfile:
         util.write_points(hull, FLAGS.hull_outfile)
     else:
         logging.info(f"Hull Points: {hull}")
 
+    logging.info(f"Constructed the hull in {runtime}s.")
+
+    if not convex_hull.validate_hull(hull, points):
+        logging.error("Error: constructed hull is not convex.")
+        return 1
+    else:
+        logging.info("Hull is valid!")
+
     if FLAGS.stats_outfile:
+        logging.info(f"Writing run stats to {FLAGS.stats_outfile}")
         with open(FLAGS.stats_outfile, "a") as f:
             f.write(f"{FLAGS.algo},{os.path.basename(FLAGS.infile)},{runtime}\n")
 
-    if FLAGS.show_plot:
-        util.show_plot(points, hull)
+    logging.info("Completed successfully!")
     return 0
 
 

@@ -24,3 +24,6 @@ class Point:
 
     def __array__(self, dtype=None):
         return np.array([self.x, self.y], dtype=float)
+
+    def __hash__(self):
+        return f'{self.x},{self.y}'.__hash__()
