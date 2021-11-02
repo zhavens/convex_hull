@@ -71,7 +71,7 @@ def angle_between(a: Point, b: Point, c: Point):
                      (np.linalg.norm(v1) * np.linalg.norm(v2)))
 
 
-def find_rightmost_in_hull(p: Point, hull: List[Point]) -> int:
+def find_rightmost_in_hull(p: Point, hull: List[Point]) -> Point:
     """Finds the rightmost point in a given hull from p.
 
     Uses a modified Jarvis scan to be able to binary search the hull, finding
@@ -84,9 +84,15 @@ def find_rightmost_in_hull(p: Point, hull: List[Point]) -> int:
         hull: The convex hull in counter-clockwise order.
     Returns:
         The index rightmost point in `hull` from `p`."""
+    if len(hull) == 1:
+        return hull[0]
+
     start = 0
     end = len(hull)
     rightmost = None
+
+    if hull[start] == p:
+        start = 1
 
     while start < end:
         start_prev = find_orientation(p, hull[start],
@@ -127,6 +133,14 @@ def find_rightmost_in_hull(p: Point, hull: List[Point]) -> int:
     return rightmost
 
 
+def find_rightmost_in_set(p: Point, candidates: List[Point]) -> Point:
+    rightmost = candidates[0]
+    for c in candidates:
+        if find_orientation(p, rightmost, c) == RIGHT_TURN:
+            rightmost = c
+    return rightmost
+
+
 def gift_wrapping(points: List[Point]) -> List[Point]:
     """Implementation of the gift-wrapping algorithm."""
     raise NotImplementedError()
@@ -139,6 +153,9 @@ def divide_and_conquer(points: List[Point]) -> List[Point]:
 
 def grahams_scan(points: List[Point]) -> List[Point]:
     """Implementation of Graham's scan."""
+
+    if len(points) < 3:
+        return points
 
     hull = []
 
@@ -198,8 +215,10 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
 
             # Find the extreme hull point that maximizes the angle between the
             # three consecutive points
-            next = max(
-                candidates, key=lambda c: angle_between(prev, curr, c))
+            # next = max(
+            #     candidates, key=lambda c: angle_between(prev, curr, c))
+
+            next = find_rightmost_in_set(curr, candidates)
 
             if logging.vlog_is_on(1) and FLAGS.verbose_plotting:
                 util.show_plot(points, hulls=[hull], lines=[

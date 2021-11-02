@@ -5,18 +5,31 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Test Debugging",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "purpose": [
+                "debug-test"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
             "name": "Convex Hull",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/src/convex_hull_main.py",
             "console": "integratedTerminal",
             "args": [
-                "-algo=grahams",
-                "--infile=${workspaceFolder}/inputs/normal50000_1",
-                "--hull_outfile=${workspaceFolder}/outputs/normal50000_1",
-                "--stats_outfile=${workspaceFolder}/results/results.csv",
+                "-algo=chans",
+                "--infile=${workspaceFolder}/inputs/testpoints",
+                // "--hull_outfile=${workspaceFolder}/outputs/normal50000_1",
+                // "--stats_outfile=${workspaceFolder}/results/results.csv",
                 "--show_plot",
-                // "-v=1"
+                "--plot_errors",
+                "--verbose_plotting",
+                "-v=3"
             ]
         },
         {

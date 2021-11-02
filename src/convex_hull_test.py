@@ -1,6 +1,7 @@
 import convex_hull
 
 from typing import List, Tuple
+import sys
 
 from absl import flags
 from absl import logging
@@ -79,17 +80,23 @@ class UtilityUnitTest(absltest.TestCase):
             make_point_set([(0, 0), (2, 0), (2, 2), (1, 1), (0, 2)])))
 
 
-@ parameterized.parameters(
-    convex_hull.gift_wrapping,
-    convex_hull.divide_and_conquer,
-    convex_hull.grahams_scan,
-    convex_hull.chans_algorithm
+@ parameterized.named_parameters(
+    # ("GiftWrap", convex_hull.gift_wrapping),
+    # ("Divide", convex_hull.divide_and_conquer),
+    ('Grahams', convex_hull.grahams_scan),
+    ('Chans', convex_hull.chans_algorithm),
 )
 class HullAlgorithmTest(parameterized.TestCase):
     def testSimpleHull(self, algo):
-        pass
+        points = make_point_set([(0, 0), (0, 2), (2, 2), (2, 0), (1, 1)])
+        hull = algo(points)
+        logging.info(f'Hull: {hull}')
+        self.assertTrue(convex_hull.validate_hull(hull, points))
 
 
 if __name__ == '__main__':
-    logging.set_verbosity(2)
+    logging.info("testing")
     absltest.main()
+elif __name__ == 'convex_hull_test':
+    flags.FLAGS.alsologtostderr = True
+    absltest.app.parse_flags_with_usage(['convex_hull_test.py'])
