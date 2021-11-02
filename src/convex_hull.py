@@ -134,6 +134,14 @@ def find_rightmost_in_hull(p: Point, hull: List[Point]) -> Point:
 
 
 def find_rightmost_in_set(p: Point, candidates: List[Point]) -> Point:
+    """Find the point rightmost from p in the given set of candidates.
+
+    Args:
+        p: The reference point
+        candidates: The set to find the rightmost in.
+    Returns:
+        The rightmost point from p.
+    """
     rightmost = candidates[0]
     for c in candidates:
         if find_orientation(p, rightmost, c) == RIGHT_TURN:
