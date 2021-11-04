@@ -23,13 +23,13 @@
             "console": "integratedTerminal",
             "args": [
                 "-algo=chans",
-                "--infile=${workspaceFolder}/inputs/testpoints",
-                // "--hull_outfile=${workspaceFolder}/outputs/normal50000_1",
-                // "--stats_outfile=${workspaceFolder}/results/results.csv",
+                "--infile=${workspaceFolder}/inputs/uniform100_1",
+                "--hull_outfile=${workspaceFolder}/outputs/uniform100_1",
+                "--stats_outfile=${workspaceFolder}/results/results.csv",
                 "--show_plot",
                 "--plot_errors",
-                "--verbose_plotting",
-                "-v=3"
+                // "--verbose_plotting",
+                // "-v=2"
             ]
         },
         {
@@ -55,7 +55,7 @@
             "console": "integratedTerminal",
             "args": [
                 "--points_file=${workspaceFolder}/inputs/random100_2",
-                "--hull_file=${workspaceFolder}/outputs/random100_2",
+                // "--hull_file=${workspaceFolder}/outputs/random100_2",
                 "-v=1"
             ]
         },

@@ -41,7 +41,7 @@ def write_points(points: List[Point], path: Text):
 def show_plot(points: List[List[Point]] = [],
               hulls: List[List[Point]] = [],
               lines: List[List[Point]] = [],
-              labels: Dict[int, Text] = {},
+              labels: Dict[Point, Text] = {},
               label_hulls: bool = False,
               title: Text = None):
     """Shows a matplot lib plot for the given points and hull."""
@@ -71,27 +71,6 @@ def show_plot(points: List[List[Point]] = [],
 
     for p, label in labels.items():
         plt.annotate(label, (p.x, p.y), ha='center')
-
-    ax.grid(True)
-    ax.margins(0.5, 0.5)
-    fig.tight_layout()
-
-    plt.axis("scaled")
-    plt.show()
-
-
-def show_jarvis_step(curr: Point, hull: List[Point], start: int, center: int, end: int):
-    """Shows a matplot lib plot for the given step in a Jarvis search."""
-    fig, ax = plt.subplots()
-
-    ax.scatter([curr.x], [curr.y])
-    ax.scatter([p.x for p in hull], [p.y for p in hull])
-    ax.plot([p.x for p in hull + [hull[0]]],
-            [p.y for p in hull + [hull[0]]])
-
-    plt.annotate('S', (hull[start].x, hull[start].y), ha='center')
-    plt.annotate('C', (hull[center].x, hull[center].y), ha='center')
-    plt.annotate('E', (hull[end].x, hull[end].y), ha='center')
 
     ax.grid(True)
     ax.margins(0.5, 0.5)

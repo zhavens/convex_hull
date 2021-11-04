@@ -81,6 +81,7 @@ class UtilityUnitTest(absltest.TestCase):
 
 
 @ parameterized.named_parameters(
+    # Uncomment algorithm lines when the algorithms are completed.
     # ("GiftWrap", convex_hull.gift_wrapping),
     # ("Divide", convex_hull.divide_and_conquer),
     ('Grahams', convex_hull.grahams_scan),
