@@ -142,9 +142,46 @@ def find_rightmost_in_set(p: Point, candidates: List[Point]) -> Point:
 
 
 def gift_wrapping(points: List[Point]) -> List[Point]:
-    """Implementation of the gift-wrapping algorithm."""
-    raise NotImplementedError()
+    """Implementation of the gift-wrapping algorithm.
+    Adapted from https://en.wikipedia.org/wiki/Gift_wrapping_algorithm and
+    https://github.com/mission-peace/interview/blob/master/src/com/interview/geometry/JarvisMarchConvexHull.java"""
 
+    hull = []
+    sortedPoints = sorted(points, key = lambda p: p.x)
+    point = sortedPoints[0]
+    first_point_in_hull = point
+    secondPoint = points[0]
+    hullComplete = False
+    collinear_points = set()
+    while not hullComplete:
+        hull.append(point)
+        hull.extend(collinear_points)
+        for p in points:
+            cross = ((point.y - p.y) * (point.x - secondPoint.x)) - ((point.y - secondPoint.y) * (point.x - p.x))
+            p_on_left= cross > 0
+            collinear = (cross == 0)
+            if p==secondPoint or p==point:
+                pass
+            elif(point == secondPoint or p_on_left):
+                secondPoint = p
+                collinear_points = set()
+            elif collinear:
+                if b_closer_to_a(point, secondPoint, p):
+                    collinear_points.append(secondPoint)
+                    secondPoint = p
+                else:
+                    collinear_points.add(p)
+        point = secondPoint
+        if secondPoint == first_point_in_hull:
+            hullComplete = True
+    return hull
+
+def b_closer_to_a ( a: Point, b: Point, c: Point) -> bool:
+    y1 = a.y - b.y
+    y2 = a.y - c.y
+    x1 = a.x-b.x
+    x2 = a.x - c.x
+    return (y1 * y1 + x1 * x1 ) < (y2 *y2 + x2 * x2)
 
 def divide_and_conquer(points: List[Point]) -> List[Point]:
     """Implementation of the divide-and-conquer algorithm."""
