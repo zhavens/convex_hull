@@ -56,6 +56,8 @@ flags.DEFINE_string("profile_outfile", None,
 
 flags.DEFINE_bool("show_plot", False,
                   "Whether to show the plot and hull after construction.")
+flags.DEFINE_bool("validate_hull", True, "Whether to validate hull upon "
+                  "completion.")
 
 
 def print_usage():
@@ -106,11 +108,12 @@ def main(argv):
     else:
         logging.info(f"Hull Points: {hull}")
 
-    if not convex_hull.validate_hull(hull, points):
-        logging.error("Error: constructed hull is not convex.")
-        return 1
-    else:
-        logging.info("Hull is valid!")
+    if FLAGS.validate_hull:
+        if not convex_hull.validate_hull(hull, points):
+            logging.error("Error: constructed hull is not convex.")
+            return 1
+        else:
+            logging.info("Hull is valid!")
 
     if FLAGS.stats_outfile:
         logging.info(f"Writing run stats to {FLAGS.stats_outfile}")
