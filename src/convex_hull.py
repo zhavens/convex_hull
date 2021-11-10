@@ -303,7 +303,7 @@ def point_in_poly(p1: Point, poly: List[Point]) -> bool:
     if len(poly) < 3:
         return False
 
-    p2 = Point(MAX_COORD, p1.y)
+    p2 = Point(sys.maxsize, p1.y)
     num_intersections = 0
     for i in range(len(poly)):
         q1 = poly[i]
@@ -351,6 +351,8 @@ def validate_hull(hull: List[Point], points: List[Point] = []) -> bool:
         return False
 
     for p in points:
+        if p == Point(40205.639404021174, 68082.31107465862):
+            logging.info("Test point.")
         if not point_in_poly(p, hull):
             logging.error(f"Point {p} does not fall inside the hull!")
             if FLAGS.plot_errors:
