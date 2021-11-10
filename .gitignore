@@ -132,5 +132,5 @@ dmypy.json
 # Testing/Runtime Outputs
 outputs/
 hulls/
-.vscode/launch.json
-.vscode/settings.json
+profiles/
+.vscode/
