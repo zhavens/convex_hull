@@ -95,22 +95,30 @@ def main(argv):
         stats.sort_stats(pstats.SortKey.CUMULATIVE)
         stats.print_stats()
         if FLAGS.profile_dir:
-            stats.dump_stats(os.path.join(FLAGS.profile_dir,
-                                          f"{FLAGS.algo}_{input_name}"))
+            profile_path = os.path.join(FLAGS.profile_dir,
+                                        f"{FLAGS.algo}_{input_name}")
+            logging.info(f"Dumping profiling stats to {profile_path}.")
+            stats.dump_stats(profile_path)
     else:
         start_time = datetime.now()
         hull = algo(points)
         runtime = (datetime.now() - start_time).total_seconds()
         logging.info(f"Constructed the hull in {runtime}s.")
-
-    if FLAGS.show_plot:
-        util.show_plot(points, hulls=[hull])
+        if FLAGS.stats_outfile:
+            logging.info(f"Writing run stats to {FLAGS.stats_outfile}")
+            with open(FLAGS.stats_outfile, "a") as f:
+                f.write(f"{FLAGS.algo},{input_name},{runtime}\n")
 
     if FLAGS.hull_dir:
-        util.write_points(hull, os.path.join(FLAGS.hull_dir,
-                                             f"{FLAGS.algo}_{input_name}"))
+        hull_path = os.path.join(FLAGS.hull_dir, f"{FLAGS.algo}_{input_name}")
+        logging.info(f"Writing output hull to {hull_path}.")
+        util.write_points(hull, hull_path)
     else:
         logging.info(f"Hull Points: {hull}")
+
+    if FLAGS.show_plot:
+        logging.info("Showing plot for hull. Close plot to continue...")
+        util.show_plot(points, hulls=[hull])
 
     if FLAGS.validate_hull:
         if not convex_hull.validate_hull(hull, points):
@@ -118,11 +126,6 @@ def main(argv):
             return 1
         else:
             logging.info("Hull is valid!")
-
-    if FLAGS.stats_outfile:
-        logging.info(f"Writing run stats to {FLAGS.stats_outfile}")
-        with open(FLAGS.stats_outfile, "a") as f:
-            f.write(f"{FLAGS.algo},{input_name},{runtime}\n")
 
     logging.info("Completed successfully!")
     return 0
