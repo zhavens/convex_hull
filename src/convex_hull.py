@@ -207,9 +207,6 @@ def grahams_scan(points: List[Point]) -> List[Point]:
 
     hull = []
 
-    def _IsCCW(c, a, b):
-        return np.cross(a-c, b-c) >= 0
-
     p0 = min(points, key=lambda p: (p.y, p.x))
     points = sorted(points, key=lambda p: np.dot(
         p-p0, [1, 0])/np.linalg.norm(p-p0) if p != p0 else 1, reverse=True)
@@ -218,7 +215,7 @@ def grahams_scan(points: List[Point]) -> List[Point]:
     logging.vlog(2, f"Sorted points: {points}")
 
     for p in points:
-        while len(hull) > 1 and not _IsCCW(hull[-2], hull[-1], p):
+        while len(hull) > 1 and not find_orientation(hull[-2], hull[-1], p) == CCW:
             hull.pop()
         hull.append(p)
         logging.vlog(2, hull)
@@ -261,11 +258,8 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
                 candidates.append(find_rightmost_in_hull(curr,
                                   subset_hulls[k]))
 
-            # Find the extreme hull point that maximizes the angle between the
-            # three consecutive points
-            # next = max(
-            #     candidates, key=lambda c: angle_between(prev, curr, c))
-
+            # Find the extreme hull point that maximizes the angle from the
+            # last point.
             next = find_rightmost_in_set(curr, candidates)
 
             if logging.vlog_is_on(1) and FLAGS.verbose_plotting:
@@ -282,6 +276,9 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
                 hull.append(next)
                 prev = curr
                 curr = next
+
+                if FLAGS.chans_eliminate_points:
+                    points = [p for hull in subset_hulls for p in hull]
 
     raise LookupError("Hull not found!")
 

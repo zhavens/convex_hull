@@ -23,12 +23,16 @@
             "console": "integratedTerminal",
             "args": [
                 "-algo=chans",
-                "--infile=${workspaceFolder}/inputs/uniform100_1",
-                "--hull_outfile=${workspaceFolder}/outputs/uniform100_1",
+                "--infile=${workspaceFolder}/inputs/clustered500k100c05d_1",
                 "--stats_outfile=${workspaceFolder}/results/results.csv",
-                "--show_plot",
-                "--plot_errors",
+                // "--hull_dir=${workspaceFolder}/outputs",
+                // "--profile_algo",
+                // "--profile_dir=${workspaceFolder}/profiles/",
+                // "--show_plot",
+                // "--plot_errors",
                 // "--verbose_plotting",
+                "--validate_hull=false",
+                "--chans_eliminate_points",
                 // "-v=2"
             ]
         },
@@ -39,10 +43,12 @@
             "program": "${workspaceFolder}/tools/gen_input_set.py",
             "console": "integratedTerminal",
             "args": [
-                "--distribution=normal",
-                "--num_points=50000",
+                "--distribution=clustered",
+                "--num_points=500000",
                 "--max_coord=1.0",
-                "--outfile=${workspaceFolder}/inputs/normal50000_1",
+                "--clustered_num_clusters=1000",
+                "--clustered_max_dist_from_center=0.005",
+                "--outfile=${workspaceFolder}/inputs/clustered500k100c05d_1",
                 "--show_plot",
                 "-v=1"
             ]
