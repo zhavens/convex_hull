@@ -43,15 +43,15 @@ flags.DEFINE_string(
     "infile", None, "The path to an input file containing x,y pairs of coordinates.")
 
 flags.DEFINE_string(
-    "hull_outfile", None, "The output file path for writing.")
+    "hull_dir", None, "The output dir to dump the hull path into.")
 
 flags.DEFINE_string(
     "stats_outfile", None, "The path to a file to append runtime stats to.")
 
 flags.DEFINE_bool("profile_algo", False,
                   "Whether to profile the hull construction algorithm.")
-flags.DEFINE_string("profile_outfile", None,
-                    "The path to dump profiling information if enabled. If "
+flags.DEFINE_string("profile_dir", None,
+                    "The dir to dump profiling information in if enabled. If "
                     "unspecified, output will be dumped to stdout.")
 
 flags.DEFINE_bool("show_plot", False,
@@ -69,6 +69,7 @@ Usage: convex_hull_main.py --infile=[infile] --outfile=[outfile] (--algo={gw, dc
 def main(argv):
     del argv  # unused
 
+    input_name = os.path.basename(FLAGS.infile)
     points = util.fetch_input_points(FLAGS.infile)
     logging.vlog(1, f"Input Points: {points}")
 
@@ -84,6 +85,7 @@ def main(argv):
     else:
         raise NotImplementedError(
             f"--algo=\"{FLAGS.algo}\" not supported.")
+
     hull = None
     if FLAGS.profile_algo:
         with cProfile.Profile() as profiler:
@@ -92,8 +94,9 @@ def main(argv):
         stats.strip_dirs()
         stats.sort_stats(pstats.SortKey.CUMULATIVE)
         stats.print_stats()
-        if FLAGS.profile_outfile:
-            stats.dump_stats(FLAGS.profile_outfile)
+        if FLAGS.profile_dir:
+            stats.dump_stats(os.path.join(FLAGS.profile_dir,
+                                          f"{FLAGS.algo}_{input_name}"))
     else:
         start_time = datetime.now()
         hull = algo(points)
@@ -103,8 +106,9 @@ def main(argv):
     if FLAGS.show_plot:
         util.show_plot(points, hulls=[hull])
 
-    if FLAGS.hull_outfile:
-        util.write_points(hull, FLAGS.hull_outfile)
+    if FLAGS.hull_dir:
+        util.write_points(hull, os.path.join(FLAGS.hull_dir,
+                                             f"{FLAGS.algo}_{input_name}"))
     else:
         logging.info(f"Hull Points: {hull}")
 
@@ -118,7 +122,7 @@ def main(argv):
     if FLAGS.stats_outfile:
         logging.info(f"Writing run stats to {FLAGS.stats_outfile}")
         with open(FLAGS.stats_outfile, "a") as f:
-            f.write(f"{FLAGS.algo},{os.path.basename(FLAGS.infile)},{runtime}\n")
+            f.write(f"{FLAGS.algo},{input_name},{runtime}\n")
 
     logging.info("Completed successfully!")
     return 0
