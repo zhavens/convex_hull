@@ -22,9 +22,9 @@
             "program": "${workspaceFolder}/src/convex_hull_main.py",
             "console": "integratedTerminal",
             "args": [
-                "-algo=chans",
-                "--infile=${workspaceFolder}/inputs/clustered500k100c05d_1",
-                "--stats_outfile=${workspaceFolder}/results/results.csv",
+                "--algo=chans",
+                "--infile=${workspaceFolder}/inputs/circle500k_ordered",
+                // "--stats_outfile=${workspaceFolder}/results/results.csv",
                 // "--hull_dir=${workspaceFolder}/outputs",
                 // "--profile_algo",
                 // "--profile_dir=${workspaceFolder}/profiles/",
@@ -43,12 +43,13 @@
             "program": "${workspaceFolder}/tools/gen_input_set.py",
             "console": "integratedTerminal",
             "args": [
-                "--distribution=clustered",
+                "--distribution=circle",
                 "--num_points=500000",
                 "--max_coord=1.0",
-                "--clustered_num_clusters=1000",
-                "--clustered_max_dist_from_center=0.005",
-                "--outfile=${workspaceFolder}/inputs/clustered500k100c05d_1",
+                // "--clustered_num_clusters=1000",
+                // "--clustered_max_dist_from_center=0.005",
+                "--randomize_order",
+                "--outfile=${workspaceFolder}/inputs/circle500k_random",
                 "--show_plot",
                 "-v=1"
             ]

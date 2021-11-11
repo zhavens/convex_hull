@@ -15,7 +15,8 @@ import util
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_enum("distribution", "uniform", ["uniform", "normal", "clustered"],
+flags.DEFINE_enum("distribution", "uniform",
+                  ["uniform", "normal", "clustered", "circle"],
                   "The distribution type for the generated points.")
 
 flags.DEFINE_integer(
@@ -36,6 +37,9 @@ flags.DEFINE_integer("clustered_num_clusters", 1, "The number of clusters to "
 flags.DEFINE_float("clustered_max_dist_from_center", 10, "How far points can "
                    "be from the center of a cluster.")
 
+flags.DEFINE_bool("randomize_order", False, "Whether the points should be "
+                  "randomly reordered after generation.")
+
 flags.DEFINE_bool("show_plot", False,
                   "Whether to show the points after generation.")
 
@@ -46,7 +50,7 @@ def print_usage():
 Usage: gen_input_set.py --distribution=[dist] --num_points=[num_points] --outfile=[infile]""")
 
 
-def uniform_points(num_points: int, max_coord: float):
+def uniform_points(num_points: int, max_coord: float) -> List[Point]:
     points = []
     for i in range(num_points):
         points.append(Point(random.uniform(0, max_coord),
@@ -54,7 +58,7 @@ def uniform_points(num_points: int, max_coord: float):
     return points
 
 
-def normal_points(num_points: int, mean: float, stddev: float):
+def normal_points(num_points: int, mean: float, stddev: float) -> List[Point]:
     points = []
     for i in range(num_points):
         points.append(Point(random.gauss(mean, stddev),
@@ -63,7 +67,7 @@ def normal_points(num_points: int, mean: float, stddev: float):
 
 
 def clustered_points(num_points: int, num_clusters: int, max_coord: float,
-                     max_from_center: float):
+                     max_from_center: float) -> List[Point]:
     points = []
     centers = [Point(random.uniform(0, max_coord),
                      random.uniform(0, max_coord)) for i in range(num_clusters)]
@@ -75,6 +79,15 @@ def clustered_points(num_points: int, num_clusters: int, max_coord: float,
         points.append(Point(centers[center].x + (math.cos(angle)*dist),
                             centers[center].y + (math.sin(angle)*dist)))
 
+    return points
+
+
+def circle_points(num_points: int, max_coord: float) -> List[Point]:
+    points = []
+    for i in range(num_points):
+        angle = (i/num_points) * 2 * math.pi
+        points.append(Point(max_coord * math.cos(angle),
+                            max_coord * math.sin(angle)))
     return points
 
 
@@ -92,9 +105,14 @@ def main(argv):
                                   FLAGS.clustered_num_clusters,
                                   FLAGS.max_coord,
                                   FLAGS.clustered_max_dist_from_center)
+    elif FLAGS.distribution == "circle":
+        points = circle_points(FLAGS.num_points, FLAGS.max_coord)
     else:
         raise NotImplementedError(
             f"--distribution=\"{FLAGS.distribution}\" not supported.")
+
+    if FLAGS.randomize_order:
+        random.shuffle(points)
 
     if FLAGS.show_plot:
         util.show_plot(points, None)

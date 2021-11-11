@@ -99,14 +99,14 @@ def find_rightmost_in_hull(p: Point, hull: List[Point]) -> Point:
                                       hull[(end - 1) % len(hull)])
         start_next = find_orientation(p, hull[start],
                                       hull[(start + 1) % len(hull)])
-        center = math.floor((start + end) / 2)
 
+        center = math.floor((start + end) / 2)
+        # The direction of the center point relative to the start point
+        center_dir = find_orientation(p, hull[start], hull[center])
         center_prev = find_orientation(p, hull[center],
                                        hull[(center - 1) % len(hull)])
         center_next = find_orientation(p, hull[center],
                                        hull[(center + 1) % len(hull)])
-        # The direction of the center point relative to the start point
-        center_dir = find_orientation(p, hull[start], hull[center])
 
         if logging.vlog_is_on(3) and FLAGS.verbose_plotting:
             util.show_plot(hull + [p], hulls=[hull],
