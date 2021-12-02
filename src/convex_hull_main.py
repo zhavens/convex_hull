@@ -71,7 +71,7 @@ def main(argv):
 
     input_name = os.path.basename(FLAGS.infile)
     points = util.fetch_input_points(FLAGS.infile)
-    logging.vlog(1, f"Input Points: {points}")
+    logging.vlog(4, f"Input Points: {points}")
 
     algo = None
     if FLAGS.algo == "gw":
