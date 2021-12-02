@@ -20,11 +20,17 @@ flags.DEFINE_bool("plot_errors", False, "Whether to show plots when there "
 flags.DEFINE_bool("verbose_plotting", False, "Whether to plot when logging "
                   "verbosely.")
 
+flags.DEFINE_bool("grahams_split_hull", False, "Whether Graham's scan should "
+                  "construct the hull from upper and lower pieces. Causes "
+                  "point sorting by x-coordinate instead of radial angle.")
+
 flags.DEFINE_bool("chans_eliminate_points", False, "Whether to eliminate "
                   "points from the input set if they aren't part of any "
                   "calculated hulls.")
 flags.DEFINE_bool("chans_merge_hulls", False, "Whether to merge previously "
                   "calculated hulls when increasing subset size.")
+flags.DEFINE_integer("chans_initial_t", 1, "The initial |t| parameter to use "
+                     "when estimating |m| using the squaring scheme.")
 
 # The maximum coordinate value we want to use in our plane.
 MAX_COORD = 100
@@ -207,6 +213,9 @@ def grahams_scan(points: List[Point]) -> List[Point]:
 
     hull = []
 
+    # TODO(havensz@): Add toggle to calculate upper and lower hulls
+    # independently using alternating windings instead, as discussed in class.
+
     p0 = min(points, key=lambda p: (p.y, p.x))
     points = sorted(points, key=lambda p: np.dot(
         p-p0, [1, 0])/np.linalg.norm(p-p0) if p != p0 else 1, reverse=True)
@@ -229,10 +238,16 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
     p0 = Point(MAX_COORD, 0)
     p1 = min(points, key=lambda p: p.x)
 
-    for t in range(1, math.ceil(math.log2(math.log2(len(points))))):
+    if (FLAGS.chans_initial_t < 1):
+        raise ValueError()
+
+    # Initial t value can be set via a flag for testing/calibration
+    for t in range(FLAGS.chans_initial_t,
+                   max(math.ceil(math.log2(math.log2(len(points)))),
+                       FLAGS.chans_initial_t + 1)):
         # An estimation for the number of points in the hull using the squaring
         # scheme.
-        m = 2 ** (2 ** t)
+        m = min(2 ** (2 ** t), len(points))
 
         num_subsets = math.ceil(len(points) / m)
         subset_hulls = []
