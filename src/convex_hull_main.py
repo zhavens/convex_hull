@@ -135,5 +135,7 @@ if __name__ == "__main__":
     FLAGS.logtostderr = True
     flags.mark_flag_as_required('infile')
 
-    matplotlib.use("TkAgg")
+    # May be necessary on certain systems to specify the MPL backend.
+    # See https://matplotlib.org/stable/users/explain/backends.html for details.
+    # matplotlib.use("TkAgg")
     app.run(main)
