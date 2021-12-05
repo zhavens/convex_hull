@@ -208,125 +208,86 @@ def b_closer_to_a ( a: Point, b: Point, c: Point) -> bool:
     x2 = a.x - c.x
     return (y1 * y1 + x1 * x1 ) < (y2 *y2 + x2 * x2)
 
-def brute_force(points: List[Point]) -> List[Point]:
-    "Adapted from https://www.geeksforgeeks.org/convex-hull-using-divide-and-conquer-algorithm/"
-    s = set()
-    for i in range(0, len(points)):
-        for j in range(i+1, len(points)):
-            x1 = points[i].x
-            x2 = points[j].x
-            y1 = points[i].y
-            y2 = points[i].y
-
-            a1= y1-y2
-            b1 = x2 - x1
-            c1 = x1*y2 - y1 *x2
-            pos = 0
-            neg = 0
-            for k in range (0, len(points)):
-                if (a1 * points[k].x + b1*points[k].y + c1 <= 0 ):
-                    neg +=1
-                if (a1 * points[k].x + b1*points[k].y + c1 >= 0 ):
-                    pos+=1
-            if (pos == len(points) or neg == len(points)):
-                s.add(points[i])
-                s.add(points[j])
-            return s
-
-def find_tangent_clockwise(ch_A, ch_B,  start_i, start_j ):
-    i = start_i
-    j = start_j
-    notfound = True
-    while (notfound):
-        yij = (ch_A[i].y - ch_B[j].y) / (ch_A[i].x - ch_B[j].x)
-        slope_a = (ch_A[(i + 1) % len(ch_A)].y - ch_A[i % len(ch_A)].y) / (
-                    ch_A[(i + 1) % len(ch_A)].x - ch_A[i % len(ch_A)].x)
-        slope_b = (ch_B[(j + 1) % len(ch_B)].y - ch_B[j % len(ch_B)].y) / (
-                    ch_B[(j + 1) % len(ch_B)].x - ch_B[j % len(ch_B)].x)
-        if slope_a >= yij:
-            i += 1
-        elif slope_b > yij:
-            j += 1
-        else:
-            notfound = False
-    return i, j
-
-def find_tangent_CCW(ch_A, ch_B,  start_i, start_j):
-    i = start_i
-    j = start_j
-    notfound = True
-    while (notfound):
-        yij = (ch_A[i % len(ch_A)].y - ch_B[j % len(ch_B)].y) / (ch_A[i % len(ch_A)].x - ch_B[j % len(ch_B)].x)
-        slope_a = (ch_A[(i - 1) % len(ch_A)].y - ch_A[i % len(ch_A)].y) / (
-                ch_A[(i - 1) % len(ch_A)].x - ch_A[i % len(ch_A)].x)
-        slope_b = (ch_B[(j - 1) % len(ch_B)].y - ch_B[j % len(ch_B)].y) / (
-                ch_B[(j - 1) % len(ch_B)].x - ch_B[j % len(ch_B)].x)
-        if slope_b <= yij:
-            j -= 1
-        elif slope_a < yij:
-            i -= 1
-        else:
-            notfound = False
-
-    return i,j
+def y_intesection(a, b, x):
+    """Determines the y coordinate of the intersection between the line (`a`,`b`) and the vertical line at x = x`"""
+    slope = (b.y - a.y) / (b.x - a.x)
+    return a.y + (slope * (x - a.x))
 
 def divide_and_conquer(points: List[Point]) -> List[Point]:
-    """Implementation of the divide-and-conquer algorithm."""
-    if(len(points) <= 3):
-        r_a =sorted(points, key = lambda p:p.x)[len(points) -1]
-        clockwise = sorted(points, key = lambda point: clockwise_angle_distance(point, r_a) )
-        return clockwise
+    if (len(points) < 3):
+        return points
+    if (len(points) == 3):
+        hull = sorted(points, key=lambda p: p.x)
+        if (find_orientation(hull[0], hull[1], hull[2]) == CCW):
+            hull[1], hull[2] = hull[2], hull[1]
+        return hull
 
     hull = []
-    sortedPoints = sorted(points, key=lambda p: p.y)
+
+    sortedPoints = sorted(points, key=lambda p: p.x)
     half_index = len(points) // 2
     A = sortedPoints[:half_index]
     B = sortedPoints[half_index:]
     ch_A = divide_and_conquer(A)
     ch_B = divide_and_conquer(B)
-    A_x_sorted = sorted(ch_A,key=lambda p: p.x )
-    B_x_sorted = sorted(ch_B,key=lambda p: p.x )
-    r_a = A_x_sorted[len(A_x_sorted) -1]
-    r_b = B_x_sorted[len(B_x_sorted) -1]
-    l_a = A_x_sorted[0]
-    l_b = B_x_sorted[0]
+    r_a = max(ch_A, key=lambda p: p.x)
+    l_b = min(ch_B, key=lambda p: p.x)
 
-    #compute the right tangent
-    if r_a.x == r_b.x:
-        a_right_tan = ch_A.index(r_a)
-        b_right_tan = ch_B.index(r_b)
-    elif r_a.x < r_b.x:
-        a_right_tan, b_right_tan = find_tangent_clockwise(ch_A, ch_B, 0, 0 )
-    else:
-        a_right_tan, b_right_tan = find_tangent_CCW(ch_A, ch_B, 0, 0)
+    #compute upper tangent
+    i = ch_A.index(r_a)
+    j = ch_B.index(l_b)
+    center_x = r_a.x + ((l_b.x - r_a.x) / 2)
 
-    #find the left tangent
-    if l_a.x == l_b.x:
-        a_left_tan = ch_A.index(l_a)
-        b_left_tan = ch_B.index(l_b)
-    elif l_a.x < l_b.x:
-        a_left_tan, b_left_tan = find_tangent_clockwise(ch_A, ch_B, ch_A.index((l_a)), ch_B.index(l_b))
-    else:
-        a_left_tan, b_left_tan = find_tangent_CCW(ch_A, ch_B, ch_A.index((l_a)), ch_B.index(l_b) )
+    y_IJ = y_intesection(ch_A[i],ch_B[j],center_x)
+    y_IJplusone = y_intesection(ch_A[i],ch_B[(j+1)%len(ch_B)],center_x)
+    y_IminusoneJ = y_intesection(ch_A[(i-1) % len(ch_A)], ch_B[j], center_x)
+    while(y_IJplusone>= y_IJ or y_IminusoneJ >= y_IJ ):
+        if y_IJplusone >= y_IJ:
+            j = (j+1)%len(ch_B)
+        else:
+            i = (i-1)%len(ch_A)
+        y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
+        y_IJplusone = y_intesection(ch_A[i], ch_B[(j + 1) % len(ch_B)], center_x)
+        y_IminusoneJ = y_intesection(ch_A[(i - 1) % len(ch_A)], ch_B[j], center_x)
 
-    a_complete = False
-    i = a_right_tan
-    while(not a_complete):
-        hull.append(ch_A[i% len(ch_A)] )
-        if(ch_A[i% len(ch_A)] == ch_A[a_left_tan]):
-            a_complete = True
-        i += 1
+    upper_a_idx = i
+    upper_b_idx = j
 
-    b_complete = False
-    i = b_left_tan
-    while(not b_complete):
-        hull.append(ch_B[i% len(ch_B)] )
-        if(ch_B[i% len(ch_B)] == ch_B[b_right_tan]):
-            b_complete = True
-        i += 1
+    #compute lower tangent
+    i = ch_A.index(r_a)
+    j = ch_B.index(l_b)
+    y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
+    y_IJminusone = y_intesection(ch_A[i], ch_B[(j-1) % len(ch_B)], center_x)
+    y_IplusoneJ = y_intesection(ch_A[(i+1) % len(ch_A)], ch_B[j], center_x)
+    while (y_IJminusone <= y_IJ or y_IplusoneJ <= y_IJ):
+        if y_IJminusone <= y_IJ:
+            j = (j-1)%len(ch_B)
+        else:
+            i = (i + 1) % len(ch_A)
+        y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
+        y_IJminusone = y_intesection(ch_A[i], ch_B[(j - 1) % len(ch_B)], center_x)
+        y_IplusoneJ = y_intesection(ch_A[(i + 1) % len(ch_A)], ch_B[j], center_x)
+
+    lower_a_idx = i
+    lower_b_idx = j
+
+    # Build the hull
+    hull.append(ch_B[upper_b_idx])
+    if (upper_b_idx != lower_b_idx):
+        i = (upper_b_idx+1) % len(ch_B)
+        while (i != lower_b_idx):
+            hull.append(ch_B[i])
+            i = (i+1) % len(ch_B)
+        hull.append(ch_B[lower_b_idx])
+
+    hull.append(ch_A[lower_a_idx])
+    if (upper_a_idx != lower_a_idx):
+        i = (lower_a_idx+1) % len(ch_A)
+        while (i != upper_a_idx):
+            hull.append(ch_A[i])
+            i = (i+1) % len(ch_A)
+        hull.append(ch_A[upper_a_idx])
     return hull
-
-
 
 def grahams_scan(points: List[Point]) -> List[Point]:
     """Implementation of Graham's scan."""
