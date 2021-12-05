@@ -20,11 +20,17 @@ flags.DEFINE_bool("plot_errors", False, "Whether to show plots when there "
 flags.DEFINE_bool("verbose_plotting", False, "Whether to plot when logging "
                   "verbosely.")
 
+flags.DEFINE_bool("grahams_split_hull", False, "Whether Graham's scan should "
+                  "construct the hull from upper and lower pieces. Causes "
+                  "point sorting by x-coordinate instead of radial angle.")
+
 flags.DEFINE_bool("chans_eliminate_points", False, "Whether to eliminate "
                   "points from the input set if they aren't part of any "
                   "calculated hulls.")
 flags.DEFINE_bool("chans_merge_hulls", False, "Whether to merge previously "
                   "calculated hulls when increasing subset size.")
+flags.DEFINE_integer("chans_initial_t", 1, "The initial |t| parameter to use "
+                     "when estimating |m| using the squaring scheme.")
 
 # The maximum coordinate value we want to use in our plane.
 MAX_COORD = 100
@@ -34,6 +40,10 @@ RIGHT_TURN = -1
 LEFT_TURN = 1
 CCW = 1
 CW = -1
+
+
+def vplot_is_on(level: int):
+    return logging.vlog_is_on(level) and FLAGS.verbose_plotting
 
 
 def find_orientation(curr: Point, prev: Point, next: Point) -> int:
@@ -99,16 +109,16 @@ def find_rightmost_in_hull(p: Point, hull: List[Point]) -> Point:
                                       hull[(end - 1) % len(hull)])
         start_next = find_orientation(p, hull[start],
                                       hull[(start + 1) % len(hull)])
-        center = math.floor((start + end) / 2)
 
+        center = math.floor((start + end) / 2)
+        # The direction of the center point relative to the start point
+        center_dir = find_orientation(p, hull[start], hull[center])
         center_prev = find_orientation(p, hull[center],
                                        hull[(center - 1) % len(hull)])
         center_next = find_orientation(p, hull[center],
                                        hull[(center + 1) % len(hull)])
-        # The direction of the center point relative to the start point
-        center_dir = find_orientation(p, hull[start], hull[center])
 
-        if logging.vlog_is_on(3) and FLAGS.verbose_plotting:
+        if vplot_is_on(3):
             util.show_plot(hull + [p], hulls=[hull],
                            labels={hull[end % len(hull)]: 'E', hull[start]: 'S',
                                    hull[center]: 'C', p: 'P'})
@@ -119,7 +129,8 @@ def find_rightmost_in_hull(p: Point, hull: List[Point]) -> Point:
             break
         elif ((center_dir == LEFT_TURN and
                 (start_next == RIGHT_TURN or start_prev == start_next)) or
-              (center_dir == RIGHT_TURN and center_prev == RIGHT_TURN)):
+              (center_dir == RIGHT_TURN and center_prev == RIGHT_TURN) or
+              (center_dir == COLINEAR and center_prev == RIGHT_TURN)):
             end = center
         else:
             start = center + 1
@@ -127,7 +138,7 @@ def find_rightmost_in_hull(p: Point, hull: List[Point]) -> Point:
     if not rightmost:
         rightmost = hull[start % len(hull)]
 
-    if logging.vlog_is_on(2) and FLAGS.verbose_plotting:
+    if vplot_is_on(2):
         util.show_plot([p], hulls=[hull], lines=[[p, rightmost]])
 
     return rightmost
@@ -171,7 +182,7 @@ def gift_wrapping(points: List[Point]) -> List[Point]:
     https://github.com/mission-peace/interview/blob/master/src/com/interview/geometry/JarvisMarchConvexHull.java"""
 
     hull = []
-    sortedPoints = sorted(points, key = lambda p: p.x)
+    sortedPoints = sorted(points, key=lambda p: p.x)
     point = sortedPoints[0]
     first_point_in_hull = point
     secondPoint = points[0]
@@ -181,10 +192,11 @@ def gift_wrapping(points: List[Point]) -> List[Point]:
         hull.append(point)
         hull.extend(collinear_points)
         for p in points:
-            cross = ((point.y - p.y) * (point.x - secondPoint.x)) - ((point.y - secondPoint.y) * (point.x - p.x))
-            p_on_left= cross > 0
+            cross = ((point.y - p.y) * (point.x - secondPoint.x)) - \
+                ((point.y - secondPoint.y) * (point.x - p.x))
+            p_on_left = cross > 0
             collinear = (cross == 0)
-            if p==secondPoint or p==point:
+            if p == secondPoint or p == point:
                 pass
             elif(point == secondPoint or p_on_left):
                 secondPoint = p
@@ -200,13 +212,15 @@ def gift_wrapping(points: List[Point]) -> List[Point]:
             hullComplete = True
     return hull
 
+
 def b_closer_to_a ( a: Point, b: Point, c: Point) -> bool:
     """Adapted from https://github.com/mission-peace/interview/blob/master/src/com/interview/geometry/JarvisMarchConvexHull.java"""
     y1 = a.y - b.y
     y2 = a.y - c.y
     x1 = a.x-b.x
     x2 = a.x - c.x
-    return (y1 * y1 + x1 * x1 ) < (y2 *y2 + x2 * x2)
+    return (y1 * y1 + x1 * x1) < (y2 * y2 + x2 * x2)
+
 
 def y_intesection(a, b, x):
     """Determines the y coordinate of the intersection between the line (`a`,`b`) and the vertical line at x = x`"""
@@ -297,8 +311,8 @@ def grahams_scan(points: List[Point]) -> List[Point]:
 
     hull = []
 
-    def _IsCCW(c, a, b):
-        return np.cross(a-c, b-c) >= 0
+    # TODO(havensz@): Add toggle to calculate upper and lower hulls
+    # independently using alternating windings instead, as discussed in class.
 
     p0 = min(points, key=lambda p: (p.y, p.x))
     points = sorted(points, key=lambda p: np.dot(
@@ -308,7 +322,7 @@ def grahams_scan(points: List[Point]) -> List[Point]:
     logging.vlog(2, f"Sorted points: {points}")
 
     for p in points:
-        while len(hull) > 1 and not _IsCCW(hull[-2], hull[-1], p):
+        while len(hull) > 1 and not find_orientation(hull[-2], hull[-1], p) == CCW:
             hull.pop()
         hull.append(p)
         logging.vlog(2, hull)
@@ -322,10 +336,17 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
     p0 = Point(MAX_COORD, 0)
     p1 = min(points, key=lambda p: p.x)
 
-    for t in range(1, math.ceil(math.log2(math.log2(len(points))))):
+    if (FLAGS.chans_initial_t < 1):
+        raise ValueError()
+
+    # Initial t value can be set via a flag for testing/calibration.
+    for t in range(FLAGS.chans_initial_t,
+                   max(math.ceil(math.log2(math.log2(len(points))))+1,
+                       FLAGS.chans_initial_t + 1)):
         # An estimation for the number of points in the hull using the squaring
         # scheme.
-        m = 2 ** (2 ** t)
+        m = min(2 ** (2 ** t), len(points))
+        logging.vlog(1, f"Chan's hull estimation: t={t}, m={m}")
 
         num_subsets = math.ceil(len(points) / m)
         subset_hulls = []
@@ -337,7 +358,7 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
             end = min((k+1)*m, len(points))
             subset_hulls.append(grahams_scan(points[start:end]))
 
-        if logging.vlog_is_on(2) and FLAGS.verbose_plotting:
+        if vplot_is_on(2):
             util.show_plot(points, hulls=subset_hulls,
                            title=f'Sub-hulls for m={m}')
 
@@ -351,14 +372,11 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
                 candidates.append(find_rightmost_in_hull(curr,
                                   subset_hulls[k]))
 
-            # Find the extreme hull point that maximizes the angle between the
-            # three consecutive points
-            # next = max(
-            #     candidates, key=lambda c: angle_between(prev, curr, c))
-
+            # Find the extreme hull point that maximizes the angle from the
+            # last point.
             next = find_rightmost_in_set(curr, candidates)
 
-            if logging.vlog_is_on(1) and FLAGS.verbose_plotting:
+            if vplot_is_on(1):
                 util.show_plot(points, hulls=[hull], lines=[
                                [curr, cand] for cand in candidates],
                                labels={p1: 'p1', curr: 'p', next: 'p+'},
@@ -372,6 +390,12 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
                 hull.append(next)
                 prev = curr
                 curr = next
+
+                if FLAGS.chans_eliminate_points:
+                    points = [p for hull in subset_hulls for p in hull]
+
+        if vplot_is_on(2):
+            util.show_plot(points, hull, label_hulls=True)
 
     raise LookupError("Hull not found!")
 
@@ -433,7 +457,7 @@ def point_in_poly(p1: Point, poly: List[Point]) -> bool:
     if len(poly) < 3:
         return False
 
-    p2 = Point(MAX_COORD, p1.y)
+    p2 = Point(sys.maxsize, p1.y)
     num_intersections = 0
     for i in range(len(poly)):
         q1 = poly[i]
