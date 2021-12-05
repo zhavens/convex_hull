@@ -15,6 +15,8 @@ import util
 
 FLAGS = flags.FLAGS
 
+MAX_EPSILON = 1e-12
+
 flags.DEFINE_enum("distribution", "uniform",
                   ["uniform", "normal", "clustered", "circle"],
                   "The distribution type for the generated points.")
@@ -39,6 +41,10 @@ flags.DEFINE_integer("clustered_num_clusters", 1, "The number of clusters to "
                      "generate points around.")
 flags.DEFINE_float("clustered_relative_size", 2.5, "The relative size of the "
                    "cluster based on number of clusters and max coord value.")
+
+flags.DEFINE_boolean("circle_general_position", True, "Whether to ensure that "
+                     "circle points are in general position by applying some "
+                     "small epsilon perturbation.")
 
 flags.DEFINE_bool("randomize_order", False, "Whether the points should be "
                   "randomly reordered after generation.")
@@ -96,6 +102,11 @@ def circle_points(num_points: int, max_coord: float) -> List[Point]:
     points = []
     for i in range(num_points):
         angle = (i/num_points) * 2 * math.pi
+        x = max_coord * math.cos(angle)
+        y = max_coord * math.sin(angle)
+        if FLAGS.circle_general_position:
+            x += random.uniform(0, MAX_EPSILON)
+            y += random.uniform(0, MAX_EPSILON)
         points.append(Point(max_coord * math.cos(angle),
                             max_coord * math.sin(angle)))
     return points
@@ -156,10 +167,15 @@ def main(argv):
     if FLAGS.show_plot:
         util.show_plot(points, None)
 
-    path = FLAGS.outfile if FLAGS.outfile else os.path.join(
-        FLAGS.outdir, filename)
-    util.write_points(points, path)
-    logging.info(f"Wrote points to {path}")
+    if FLAGS.outfile:
+        util.write_points(points, FLAGS.outfile)
+        logging.info(f"Wrote points to {FLAGS.outfile}")
+    elif FLAGS.outdir:
+        path = os.path.join(FLAGS.outdir, filename)
+        util.write_points(points, path)
+        logging.info(f"Wrote points to {path}")
+    else:
+        logging.warning(f"No paths specified, points not being written.")
 
 
 if __name__ == "__main__":
