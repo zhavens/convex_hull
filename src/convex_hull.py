@@ -42,6 +42,10 @@ CCW = 1
 CW = -1
 
 
+def vplot_is_on(level: int):
+    return logging.vlog_is_on(level) and FLAGS.verbose_plotting
+
+
 def find_orientation(curr: Point, prev: Point, next: Point) -> int:
     """Finds the orientation of the angle within the points.
 
@@ -114,7 +118,7 @@ def find_rightmost_in_hull(p: Point, hull: List[Point]) -> Point:
         center_next = find_orientation(p, hull[center],
                                        hull[(center + 1) % len(hull)])
 
-        if logging.vlog_is_on(3) and FLAGS.verbose_plotting:
+        if vplot_is_on(3):
             util.show_plot(hull + [p], hulls=[hull],
                            labels={hull[end % len(hull)]: 'E', hull[start]: 'S',
                                    hull[center]: 'C', p: 'P'})
@@ -125,7 +129,8 @@ def find_rightmost_in_hull(p: Point, hull: List[Point]) -> Point:
             break
         elif ((center_dir == LEFT_TURN and
                 (start_next == RIGHT_TURN or start_prev == start_next)) or
-              (center_dir == RIGHT_TURN and center_prev == RIGHT_TURN)):
+              (center_dir == RIGHT_TURN and center_prev == RIGHT_TURN) or
+              (center_dir == COLINEAR and center_prev == RIGHT_TURN)):
             end = center
         else:
             start = center + 1
@@ -133,7 +138,7 @@ def find_rightmost_in_hull(p: Point, hull: List[Point]) -> Point:
     if not rightmost:
         rightmost = hull[start % len(hull)]
 
-    if logging.vlog_is_on(2) and FLAGS.verbose_plotting:
+    if vplot_is_on(2):
         util.show_plot([p], hulls=[hull], lines=[[p, rightmost]])
 
     return rightmost
@@ -248,6 +253,7 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
         # An estimation for the number of points in the hull using the squaring
         # scheme.
         m = min(2 ** (2 ** t), len(points))
+        logging.vlog(1, f"Chan's hull estimation: t={t}, m={m}")
 
         num_subsets = math.ceil(len(points) / m)
         subset_hulls = []
@@ -259,7 +265,7 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
             end = min((k+1)*m, len(points))
             subset_hulls.append(grahams_scan(points[start:end]))
 
-        if logging.vlog_is_on(2) and FLAGS.verbose_plotting:
+        if vplot_is_on(2):
             util.show_plot(points, hulls=subset_hulls,
                            title=f'Sub-hulls for m={m}')
 
@@ -277,7 +283,7 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
             # last point.
             next = find_rightmost_in_set(curr, candidates)
 
-            if logging.vlog_is_on(1) and FLAGS.verbose_plotting:
+            if vplot_is_on(1):
                 util.show_plot(points, hulls=[hull], lines=[
                                [curr, cand] for cand in candidates],
                                labels={p1: 'p1', curr: 'p', next: 'p+'},
@@ -294,6 +300,9 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
 
                 if FLAGS.chans_eliminate_points:
                     points = [p for hull in subset_hulls for p in hull]
+
+        if vplot_is_on(2):
+            util.show_plot(points, hull, label_hulls=True)
 
     raise LookupError("Hull not found!")
 
