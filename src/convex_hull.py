@@ -148,6 +148,22 @@ def find_rightmost_in_set(p: Point, candidates: List[Point]) -> Point:
             rightmost = c
     return rightmost
 
+def clockwise_angle_distance(point:Point, origin: Point):
+    """
+    Adapted from https://www.py4u.net/discuss/183880
+    """
+    refvec =[0,1]
+    v = point - origin
+    lenv= math.hypot(v.x, v.y)
+    if lenv == 0:
+        return -math.pi, 0
+    normalized = Point(v.x/lenv , v.y/lenv)
+    dotprod = normalized.x * refvec[0] + normalized.y * refvec[1]
+    diffprod = refvec[1] * normalized.x - refvec[0] * normalized.y
+    angle = math.atan2(diffprod, dotprod)
+    if angle < 0:
+        return 2*math.pi + angle, lenv
+    return angle, lenv
 
 def gift_wrapping(points: List[Point]) -> List[Point]:
     """Implementation of the gift-wrapping algorithm.
@@ -185,15 +201,131 @@ def gift_wrapping(points: List[Point]) -> List[Point]:
     return hull
 
 def b_closer_to_a ( a: Point, b: Point, c: Point) -> bool:
+    """Adapted from https://github.com/mission-peace/interview/blob/master/src/com/interview/geometry/JarvisMarchConvexHull.java"""
     y1 = a.y - b.y
     y2 = a.y - c.y
     x1 = a.x-b.x
     x2 = a.x - c.x
     return (y1 * y1 + x1 * x1 ) < (y2 *y2 + x2 * x2)
 
+def brute_force(points: List[Point]) -> List[Point]:
+    "Adapted from https://www.geeksforgeeks.org/convex-hull-using-divide-and-conquer-algorithm/"
+    s = set()
+    for i in range(0, len(points)):
+        for j in range(i+1, len(points)):
+            x1 = points[i].x
+            x2 = points[j].x
+            y1 = points[i].y
+            y2 = points[i].y
+
+            a1= y1-y2
+            b1 = x2 - x1
+            c1 = x1*y2 - y1 *x2
+            pos = 0
+            neg = 0
+            for k in range (0, len(points)):
+                if (a1 * points[k].x + b1*points[k].y + c1 <= 0 ):
+                    neg +=1
+                if (a1 * points[k].x + b1*points[k].y + c1 >= 0 ):
+                    pos+=1
+            if (pos == len(points) or neg == len(points)):
+                s.add(points[i])
+                s.add(points[j])
+            return s
+
+def find_tangent_clockwise(ch_A, ch_B,  start_i, start_j ):
+    i = start_i
+    j = start_j
+    notfound = True
+    while (notfound):
+        yij = (ch_A[i].y - ch_B[j].y) / (ch_A[i].x - ch_B[j].x)
+        slope_a = (ch_A[(i + 1) % len(ch_A)].y - ch_A[i % len(ch_A)].y) / (
+                    ch_A[(i + 1) % len(ch_A)].x - ch_A[i % len(ch_A)].x)
+        slope_b = (ch_B[(j + 1) % len(ch_B)].y - ch_B[j % len(ch_B)].y) / (
+                    ch_B[(j + 1) % len(ch_B)].x - ch_B[j % len(ch_B)].x)
+        if slope_a >= yij:
+            i += 1
+        elif slope_b > yij:
+            j += 1
+        else:
+            notfound = False
+    return i, j
+
+def find_tangent_CCW(ch_A, ch_B,  start_i, start_j):
+    i = start_i
+    j = start_j
+    notfound = True
+    while (notfound):
+        yij = (ch_A[i % len(ch_A)].y - ch_B[j % len(ch_B)].y) / (ch_A[i % len(ch_A)].x - ch_B[j % len(ch_B)].x)
+        slope_a = (ch_A[(i - 1) % len(ch_A)].y - ch_A[i % len(ch_A)].y) / (
+                ch_A[(i - 1) % len(ch_A)].x - ch_A[i % len(ch_A)].x)
+        slope_b = (ch_B[(j - 1) % len(ch_B)].y - ch_B[j % len(ch_B)].y) / (
+                ch_B[(j - 1) % len(ch_B)].x - ch_B[j % len(ch_B)].x)
+        if slope_b <= yij:
+            j -= 1
+        elif slope_a < yij:
+            i -= 1
+        else:
+            notfound = False
+
+    return i,j
+
 def divide_and_conquer(points: List[Point]) -> List[Point]:
     """Implementation of the divide-and-conquer algorithm."""
-    raise NotImplementedError()
+    if(len(points) <= 3):
+        r_a =sorted(points, key = lambda p:p.x)[len(points) -1]
+        clockwise = sorted(points, key = lambda point: clockwise_angle_distance(point, r_a) )
+        return clockwise
+
+    hull = []
+    sortedPoints = sorted(points, key=lambda p: p.y)
+    half_index = len(points) // 2
+    A = sortedPoints[:half_index]
+    B = sortedPoints[half_index:]
+    ch_A = divide_and_conquer(A)
+    ch_B = divide_and_conquer(B)
+    A_x_sorted = sorted(ch_A,key=lambda p: p.x )
+    B_x_sorted = sorted(ch_B,key=lambda p: p.x )
+    r_a = A_x_sorted[len(A_x_sorted) -1]
+    r_b = B_x_sorted[len(B_x_sorted) -1]
+    l_a = A_x_sorted[0]
+    l_b = B_x_sorted[0]
+
+    #compute the right tangent
+    if r_a.x == r_b.x:
+        a_right_tan = ch_A.index(r_a)
+        b_right_tan = ch_B.index(r_b)
+    elif r_a.x < r_b.x:
+        a_right_tan, b_right_tan = find_tangent_clockwise(ch_A, ch_B, 0, 0 )
+    else:
+        a_right_tan, b_right_tan = find_tangent_CCW(ch_A, ch_B, 0, 0)
+
+    #find the left tangent
+    if l_a.x == l_b.x:
+        a_left_tan = ch_A.index(l_a)
+        b_left_tan = ch_B.index(l_b)
+    elif l_a.x < l_b.x:
+        a_left_tan, b_left_tan = find_tangent_clockwise(ch_A, ch_B, ch_A.index((l_a)), ch_B.index(l_b))
+    else:
+        a_left_tan, b_left_tan = find_tangent_CCW(ch_A, ch_B, ch_A.index((l_a)), ch_B.index(l_b) )
+
+    a_complete = False
+    i = a_right_tan
+    while(not a_complete):
+        hull.append(ch_A[i% len(ch_A)] )
+        if(ch_A[i% len(ch_A)] == ch_A[a_left_tan]):
+            a_complete = True
+        i += 1
+
+    b_complete = False
+    i = b_left_tan
+    while(not b_complete):
+        hull.append(ch_B[i% len(ch_B)] )
+        if(ch_B[i% len(ch_B)] == ch_B[b_right_tan]):
+            b_complete = True
+        i += 1
+    return hull
+
 
 
 def grahams_scan(points: List[Point]) -> List[Point]:
