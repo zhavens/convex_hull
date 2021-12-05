@@ -248,7 +248,7 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
 
     # Initial t value can be set via a flag for testing/calibration.
     for t in range(FLAGS.chans_initial_t,
-                   max(math.ceil(math.log2(math.log2(len(points)))+1),
+                   max(math.ceil(math.log2(math.log2(len(points))))+1,
                        FLAGS.chans_initial_t + 1)):
         # An estimation for the number of points in the hull using the squaring
         # scheme.
