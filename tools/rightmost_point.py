@@ -41,6 +41,9 @@ flags.DEFINE_string(
 flags.DEFINE_list(
     "point", None, "The coordinates of the reference point.")
 
+flags.DEFINE_bool(
+    "show_plot", True, "Whether or not to plot the rightmost point.")
+
 
 def print_usage():
     """Prints usage information for the tool."""
@@ -55,6 +58,8 @@ def main(argv):
               float(FLAGS.point[1].strip(")")))
     hull = util.fetch_input_points(FLAGS.hullfile)
     rightmost = convex_hull.find_rightmost_in_hull(p, hull)
+    if (FLAGS.show_plot):
+        util.show_plot(points=[p], hulls=[hull], lines=[[p, rightmost]])
     logging.info(f"Rightmost point: {rightmost}")
 
 
