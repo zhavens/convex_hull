@@ -61,3 +61,16 @@ chans,circle25K_rdm,13.763844
 chans,uniform500K,22.933619
 chans,circle25K,12.270348
 chans,normal100K,3.743747
+chans_dc,clustered500K_100c,9.290186
+chans_dc,normal50K,0.722329
+chans_dc,clustered250K_1000c,4.607472
+chans_dc,clustered250K_100c,4.518686
+chans_dc,normal500K,9.279612
+chans_dc,uniform100K,1.904004
+chans_dc,uniform50K,0.918306
+chans_dc,normal250K,4.640385
+chans_dc,normal500K_box_rdm,3.624944
+chans_dc,uniform250K,4.669381
+chans_dc,clustered100K_100c,1.791088
+chans_dc,uniform500K,9.63472
+chans_dc,normal100K,1.528701
