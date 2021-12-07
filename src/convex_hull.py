@@ -231,6 +231,9 @@ def gift_wrapping(points: List[Point]) -> List[Point]:
 
 
 def divide_and_conquer(points: List[Point]) -> List[Point]:
+    """Implementation of the divide and conquer algorithm.
+        Merging technique adapted from https://ocw.aprende.org/courses/electrical-engineering-and-computer-science/6-046j-design-and-analysis-of-algorithms-spring-2015/lecture-notes/MIT6_046JS15_lec02.pdf
+        and O'Rourke, J., 1998. Computational Geometry in C. 2nd ed. New York: Cambridge University Press, pp.91-95."""
     if (len(points) < 3):
         return points
     if (len(points) == 3):
