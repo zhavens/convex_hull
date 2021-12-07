@@ -105,10 +105,9 @@ def circle_points(num_points: int, max_coord: float) -> List[Point]:
         x = max_coord * math.cos(angle)
         y = max_coord * math.sin(angle)
         if FLAGS.circle_general_position:
-            x += random.uniform(0, MAX_EPSILON)
-            y += random.uniform(0, MAX_EPSILON)
-        points.append(Point(max_coord * math.cos(angle),
-                            max_coord * math.sin(angle)))
+            x = x + random.uniform(0, MAX_EPSILON)
+            y = y + random.uniform(0, MAX_EPSILON)
+        points.append(Point(x, y))
     return points
 
 

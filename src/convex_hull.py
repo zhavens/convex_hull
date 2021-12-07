@@ -159,22 +159,39 @@ def find_rightmost_in_set(p: Point, candidates: List[Point]) -> Point:
             rightmost = c
     return rightmost
 
-def clockwise_angle_distance(point:Point, origin: Point):
+
+def clockwise_angle_distance(point: Point, origin: Point):
     """
     Adapted from https://www.py4u.net/discuss/183880
     """
-    refvec =[0,1]
+    refvec = [0, 1]
     v = point - origin
-    lenv= math.hypot(v.x, v.y)
+    lenv = math.hypot(v.x, v.y)
     if lenv == 0:
         return -math.pi, 0
-    normalized = Point(v.x/lenv , v.y/lenv)
+    normalized = Point(v.x/lenv, v.y/lenv)
     dotprod = normalized.x * refvec[0] + normalized.y * refvec[1]
     diffprod = refvec[1] * normalized.x - refvec[0] * normalized.y
     angle = math.atan2(diffprod, dotprod)
     if angle < 0:
         return 2*math.pi + angle, lenv
     return angle, lenv
+
+
+def b_closer_to_a(a: Point, b: Point, c: Point) -> bool:
+    """Adapted from https://github.com/mission-peace/interview/blob/master/src/com/interview/geometry/JarvisMarchConvexHull.java"""
+    y1 = a.y - b.y
+    y2 = a.y - c.y
+    x1 = a.x-b.x
+    x2 = a.x - c.x
+    return (y1 * y1 + x1 * x1) < (y2 * y2 + x2 * x2)
+
+
+def y_intesection(a: Point, b: Point, x: float) -> float:
+    """Determines the y coordinate of the intersection between the line (`a`,`b`) and the vertical line at x = x`"""
+    slope = (b.y - a.y) / (b.x - a.x)
+    return a.y + (slope * (x - a.x))
+
 
 def gift_wrapping(points: List[Point]) -> List[Point]:
     """Implementation of the gift-wrapping algorithm.
@@ -213,20 +230,6 @@ def gift_wrapping(points: List[Point]) -> List[Point]:
     return hull
 
 
-def b_closer_to_a ( a: Point, b: Point, c: Point) -> bool:
-    """Adapted from https://github.com/mission-peace/interview/blob/master/src/com/interview/geometry/JarvisMarchConvexHull.java"""
-    y1 = a.y - b.y
-    y2 = a.y - c.y
-    x1 = a.x-b.x
-    x2 = a.x - c.x
-    return (y1 * y1 + x1 * x1) < (y2 * y2 + x2 * x2)
-
-
-def y_intesection(a, b, x):
-    """Determines the y coordinate of the intersection between the line (`a`,`b`) and the vertical line at x = x`"""
-    slope = (b.y - a.y) / (b.x - a.x)
-    return a.y + (slope * (x - a.x))
-
 def divide_and_conquer(points: List[Point]) -> List[Point]:
     if (len(points) < 3):
         return points
@@ -247,27 +250,29 @@ def divide_and_conquer(points: List[Point]) -> List[Point]:
     r_a = max(ch_A, key=lambda p: p.x)
     l_b = min(ch_B, key=lambda p: p.x)
 
-    #compute upper tangent
+    # compute upper tangent
     i = ch_A.index(r_a)
     j = ch_B.index(l_b)
     center_x = r_a.x + ((l_b.x - r_a.x) / 2)
 
-    y_IJ = y_intesection(ch_A[i],ch_B[j],center_x)
-    y_IJplusone = y_intesection(ch_A[i],ch_B[(j+1)%len(ch_B)],center_x)
+    y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
+    y_IJplusone = y_intesection(ch_A[i], ch_B[(j+1) % len(ch_B)], center_x)
     y_IminusoneJ = y_intesection(ch_A[(i-1) % len(ch_A)], ch_B[j], center_x)
-    while(y_IJplusone>= y_IJ or y_IminusoneJ >= y_IJ ):
+    while(y_IJplusone >= y_IJ or y_IminusoneJ >= y_IJ):
         if y_IJplusone >= y_IJ:
-            j = (j+1)%len(ch_B)
+            j = (j+1) % len(ch_B)
         else:
-            i = (i-1)%len(ch_A)
+            i = (i-1) % len(ch_A)
         y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
-        y_IJplusone = y_intesection(ch_A[i], ch_B[(j + 1) % len(ch_B)], center_x)
-        y_IminusoneJ = y_intesection(ch_A[(i - 1) % len(ch_A)], ch_B[j], center_x)
+        y_IJplusone = y_intesection(
+            ch_A[i], ch_B[(j + 1) % len(ch_B)], center_x)
+        y_IminusoneJ = y_intesection(
+            ch_A[(i - 1) % len(ch_A)], ch_B[j], center_x)
 
     upper_a_idx = i
     upper_b_idx = j
 
-    #compute lower tangent
+    # compute lower tangent
     i = ch_A.index(r_a)
     j = ch_B.index(l_b)
     y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
@@ -275,12 +280,14 @@ def divide_and_conquer(points: List[Point]) -> List[Point]:
     y_IplusoneJ = y_intesection(ch_A[(i+1) % len(ch_A)], ch_B[j], center_x)
     while (y_IJminusone <= y_IJ or y_IplusoneJ <= y_IJ):
         if y_IJminusone <= y_IJ:
-            j = (j-1)%len(ch_B)
+            j = (j-1) % len(ch_B)
         else:
             i = (i + 1) % len(ch_A)
         y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
-        y_IJminusone = y_intesection(ch_A[i], ch_B[(j - 1) % len(ch_B)], center_x)
-        y_IplusoneJ = y_intesection(ch_A[(i + 1) % len(ch_A)], ch_B[j], center_x)
+        y_IJminusone = y_intesection(
+            ch_A[i], ch_B[(j - 1) % len(ch_B)], center_x)
+        y_IplusoneJ = y_intesection(
+            ch_A[(i + 1) % len(ch_A)], ch_B[j], center_x)
 
     lower_a_idx = i
     lower_b_idx = j
@@ -302,6 +309,7 @@ def divide_and_conquer(points: List[Point]) -> List[Point]:
             i = (i+1) % len(ch_A)
         hull.append(ch_A[upper_a_idx])
     return hull
+
 
 def grahams_scan(points: List[Point]) -> List[Point]:
     """Implementation of Graham's scan."""
