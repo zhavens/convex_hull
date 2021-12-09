@@ -9,7 +9,6 @@ dc,uniform50K,0.233404
 dc,normal250K,1.665696
 dc,normal500K_box_rdm,3.477947
 dc,uniform250K,1.646177
-dc,clustered50K_100c,0.245062
 dc,clustered100K_100c,0.537569
 dc,uniform500K,3.635483
 dc,normal100K,0.517644
@@ -23,7 +22,6 @@ gw,uniform50K,1.236112
 gw,normal250K,3.619093
 gw,normal500K_box_rdm,1.663113
 gw,uniform250K,6.531939
-gw,clustered50K_100c,1.287099
 gw,clustered100K_100c,2.82628
 gw,circle25K_rdm,500.353173
 gw,uniform500K,14.473498
@@ -39,7 +37,6 @@ grahams,uniform50K,0.687258
 grahams,normal250K,3.493923
 grahams,normal500K_box_rdm,6.932691
 grahams,uniform250K,3.548909
-grahams,clustered50K_100c,0.72994
 grahams,clustered100K_100c,1.454926
 grahams,circle25K_rdm,0.326031
 grahams,uniform500K,7.049365
@@ -55,7 +52,6 @@ chans,uniform50K,2.307507
 chans,normal250K,11.024485
 chans,normal500K_box_rdm,9.34481
 chans,uniform250K,11.477193
-chans,clustered50K_100c,2.172867
 chans,clustered100K_100c,4.535738
 chans,circle25K_rdm,13.763844
 chans,uniform500K,22.933619
@@ -74,3 +70,12 @@ chans_dc,uniform250K,4.669381
 chans_dc,clustered100K_100c,1.791088
 chans_dc,uniform500K,9.63472
 chans_dc,normal100K,1.528701
+dc,clustered50K_100c,0.250985
+gw,clustered50K_100c,1.204776
+grahams,clustered50K_100c,0.701831
+chans,clustered50K_100c,2.260715
+chans_dc,clustered50K_100c,0.894424
+dc,circle25K,0.155025
+dc,circle25K_rdm,0.163588
+chans,circle25K,12.47729
+chans,circle25K_rdm,13.366635
