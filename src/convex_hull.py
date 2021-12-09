@@ -347,7 +347,9 @@ def grahams_scan(points: List[Point]) -> List[Point]:
 
 
 def chans_algorithm(points: List[Point]) -> List[Point]:
-    """Implementation of Chan's algorithm."""
+    """Implementation of Chan's algorithm. 
+
+    Based on https://iq.opengenus.org/chans-algorithm-convex-hull/"""
 
     p0 = Point(MAX_COORD, 0)
     p1 = min(points, key=lambda p: p.x)
