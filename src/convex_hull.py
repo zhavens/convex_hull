@@ -1,5 +1,6 @@
 """A library for creating and validating convex hulls."""
 
+from ctypes import ArgumentError
 import math
 from operator import attrgetter
 from typing import List, Tuple
@@ -24,6 +25,9 @@ flags.DEFINE_bool("grahams_split_hull", False, "Whether Graham's scan should "
                   "construct the hull from upper and lower pieces. Causes "
                   "point sorting by x-coordinate instead of radial angle.")
 
+flags.DEFINE_enum("chans_subset_algo", "grahams", ["grahams", "dc"],
+                  "Which algorthim Chan's should use when computing subset "
+                  "hulls.")
 flags.DEFINE_bool("chans_eliminate_points", False, "Whether to eliminate "
                   "points from the input set if they aren't part of any "
                   "calculated hulls.")
@@ -368,7 +372,13 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
         for k in range(num_subsets):
             start = k * m
             end = min((k+1)*m, len(points))
-            subset_hulls.append(grahams_scan(points[start:end]))
+            if FLAGS.chans_subset_algo == "grahams":
+                subset_hulls.append(grahams_scan(points[start:end]))
+            elif FLAGS.chans_subset_algo == "dc":
+                subset_hulls.append(divide_and_conquer(points[start:end]))
+            else:
+                raise ArgumentError(
+                    f"Invalid subset algo: f{FLAGS.chans_subset_algo}")
 
         if vplot_is_on(2):
             util.show_plot(points, hulls=subset_hulls,
