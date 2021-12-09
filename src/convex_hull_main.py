@@ -56,7 +56,7 @@ flags.DEFINE_string("profile_dir", None,
 
 flags.DEFINE_bool("show_plot", False,
                   "Whether to show the plot and hull after construction.")
-flags.DEFINE_bool("validate_hull", True, "Whether to validate hull upon "
+flags.DEFINE_bool("validate_hull", False, "Whether to validate hull upon "
                   "completion.")
 
 
