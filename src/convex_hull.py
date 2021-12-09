@@ -230,6 +230,45 @@ def gift_wrapping(points: List[Point]) -> List[Point]:
     return hull
 
 
+def find_upper_tangent(ch_A: List[Point], i: int, ch_B: List[Point], j: int, center_x: float) -> Tuple[int, int]:
+    y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
+    y_IJplusone = y_intesection(ch_A[i], ch_B[(j+1) % len(ch_B)], center_x)
+    y_IminusoneJ = y_intesection(ch_A[(i-1) % len(ch_A)], ch_B[j], center_x)
+    while(y_IJplusone >= y_IJ or y_IminusoneJ >= y_IJ):
+        if vplot_is_on(3):
+            util.show_plot(hulls=[ch_A, ch_B],
+                           lines=[[ch_A[i], ch_B[j]]],
+                           labels={ch_A[i]: "l", ch_B[j]: "r"},
+                           label_hulls=True)
+        if y_IJplusone >= y_IJ:
+            j = (j+1) % len(ch_B)
+        else:
+            i = (i-1) % len(ch_A)
+        y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
+        y_IJplusone = y_intesection(
+            ch_A[i], ch_B[(j + 1) % len(ch_B)], center_x)
+        y_IminusoneJ = y_intesection(
+            ch_A[(i - 1) % len(ch_A)], ch_B[j], center_x)
+    return i, j
+
+
+def find_lower_tangent(ch_A: List[Point], i: int, ch_B: List[Point], j: int, center_x: float) -> Tuple[int, int]:
+    y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
+    y_IJminusone = y_intesection(ch_A[i], ch_B[(j-1) % len(ch_B)], center_x)
+    y_IplusoneJ = y_intesection(ch_A[(i+1) % len(ch_A)], ch_B[j], center_x)
+    while (y_IJminusone <= y_IJ or y_IplusoneJ <= y_IJ):
+        if y_IJminusone <= y_IJ:
+            j = (j-1) % len(ch_B)
+        else:
+            i = (i + 1) % len(ch_A)
+        y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
+        y_IJminusone = y_intesection(
+            ch_A[i], ch_B[(j - 1) % len(ch_B)], center_x)
+        y_IplusoneJ = y_intesection(
+            ch_A[(i + 1) % len(ch_A)], ch_B[j], center_x)
+    return i, j
+
+
 def divide_and_conquer(points: List[Point]) -> List[Point]:
     if (len(points) < 3):
         return points
@@ -247,50 +286,15 @@ def divide_and_conquer(points: List[Point]) -> List[Point]:
     B = sortedPoints[half_index:]
     ch_A = divide_and_conquer(A)
     ch_B = divide_and_conquer(B)
+
+    # Compute tangents
     r_a = max(ch_A, key=lambda p: p.x)
     l_b = min(ch_B, key=lambda p: p.x)
-
-    # compute upper tangent
-    i = ch_A.index(r_a)
-    j = ch_B.index(l_b)
     center_x = r_a.x + ((l_b.x - r_a.x) / 2)
-
-    y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
-    y_IJplusone = y_intesection(ch_A[i], ch_B[(j+1) % len(ch_B)], center_x)
-    y_IminusoneJ = y_intesection(ch_A[(i-1) % len(ch_A)], ch_B[j], center_x)
-    while(y_IJplusone >= y_IJ or y_IminusoneJ >= y_IJ):
-        if y_IJplusone >= y_IJ:
-            j = (j+1) % len(ch_B)
-        else:
-            i = (i-1) % len(ch_A)
-        y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
-        y_IJplusone = y_intesection(
-            ch_A[i], ch_B[(j + 1) % len(ch_B)], center_x)
-        y_IminusoneJ = y_intesection(
-            ch_A[(i - 1) % len(ch_A)], ch_B[j], center_x)
-
-    upper_a_idx = i
-    upper_b_idx = j
-
-    # compute lower tangent
     i = ch_A.index(r_a)
     j = ch_B.index(l_b)
-    y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
-    y_IJminusone = y_intesection(ch_A[i], ch_B[(j-1) % len(ch_B)], center_x)
-    y_IplusoneJ = y_intesection(ch_A[(i+1) % len(ch_A)], ch_B[j], center_x)
-    while (y_IJminusone <= y_IJ or y_IplusoneJ <= y_IJ):
-        if y_IJminusone <= y_IJ:
-            j = (j-1) % len(ch_B)
-        else:
-            i = (i + 1) % len(ch_A)
-        y_IJ = y_intesection(ch_A[i], ch_B[j], center_x)
-        y_IJminusone = y_intesection(
-            ch_A[i], ch_B[(j - 1) % len(ch_B)], center_x)
-        y_IplusoneJ = y_intesection(
-            ch_A[(i + 1) % len(ch_A)], ch_B[j], center_x)
-
-    lower_a_idx = i
-    lower_b_idx = j
+    upper_a_idx, upper_b_idx = find_upper_tangent(ch_A, i, ch_B, j, center_x)
+    lower_a_idx, lower_b_idx = find_lower_tangent(ch_A, i, ch_B, j, center_x)
 
     # Build the hull
     hull.append(ch_B[upper_b_idx])
@@ -326,8 +330,8 @@ def grahams_scan(points: List[Point]) -> List[Point]:
     points = sorted(points, key=lambda p: np.dot(
         p-p0, [1, 0])/np.linalg.norm(p-p0) if p != p0 else 1, reverse=True)
 
-    logging.vlog(2, f"p0: {p0}")
-    logging.vlog(2, f"Sorted points: {points}")
+    logging.vlog(3, f"p0: {p0}")
+    logging.vlog(3, f"Sorted points: {points}")
 
     for p in points:
         while len(hull) > 1 and not find_orientation(hull[-2], hull[-1], p) == CCW:
@@ -354,9 +358,9 @@ def chans_algorithm(points: List[Point]) -> List[Point]:
         # An estimation for the number of points in the hull using the squaring
         # scheme.
         m = min(2 ** (2 ** t), len(points))
-        logging.vlog(1, f"Chan's hull estimation: t={t}, m={m}")
-
         num_subsets = math.ceil(len(points) / m)
+        logging.vlog(
+            1, f"Chan's hull estimation: t={t}, m={m}, k={num_subsets}, |k_i| = {m}")
         subset_hulls = []
 
         # Partition the input set into groups of at most m points and find
