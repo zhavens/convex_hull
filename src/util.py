@@ -73,8 +73,10 @@ def show_plot(points: List[List[Point]] = [],
         plt.annotate(label, (p.x, p.y), ha='center')
 
     ax.grid(True)
-    ax.margins(0.5, 0.5)
+    x0, x1 = ax.get_xlim()
+    y0, y1 = ax.get_ylim()
+    ax.set_aspect(abs(x1-x0)/abs(y1-y0))
     fig.tight_layout()
 
-    plt.axis("scaled")
+    # plt.axis("scaled")
     plt.show()
